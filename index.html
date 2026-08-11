@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Cento Carte</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #273549;
+    --accent: #22c55e;
+    --accent-2: #38bdf8;
+    --danger: #ef4444;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    padding: 14px 16px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #ffffff14;
+  }
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    gap: 16px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .screen { width: 100%; display: none; flex-direction: column; gap: 14px; }
+  .screen.active { display: flex; }
+
+  .card-panel {
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 18px;
+    width: 100%;
+  }
+  label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 6px; }
+  input[type="text"] {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #ffffff22;
+    background: var(--panel-2);
+    color: var(--text);
+    font-size: 1.1rem;
+    text-transform: uppercase;
+  }
+  input[type="text"]::placeholder { text-transform: none; color: var(--muted); }
+  button {
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+  }
+  button:disabled { opacity: 0.5; }
+  .btn-primary { background: var(--accent); color: #05230f; }
+  .btn-secondary { background: var(--panel-2); color: var(--text); border: 1px solid #ffffff22; }
+
+  .error-box {
+    background: #ef444422;
+    border: 1px solid var(--danger);
+    color: #fecaca;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    display: none;
+  }
+  .status-box {
+    background: #38bdf822;
+    border: 1px solid var(--accent-2);
+    color: #bae6fd;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    text-align: center;
+    display: none;
+  }
+
+  .lobby-code {
+    text-align: center;
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: 6px;
+    color: var(--accent-2);
+    margin: 4px 0;
+  }
+  .players-list { display: flex; flex-direction: column; gap: 8px; }
+  .player-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--panel-2);
+    padding: 10px 14px;
+    border-radius: 10px;
+  }
+  .player-row .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 8px; }
+  .player-row.offline .dot { background: var(--muted); }
+
+  .pile-area {
+    text-align: center;
+    background: linear-gradient(160deg, var(--panel), var(--panel-2));
+    border-radius: 20px;
+    padding: 26px 18px;
+  }
+  .pile-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .pile-number {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--accent-2);
+    line-height: 1.1;
+  }
+  .pile-sub { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+  .others-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .other-chip {
+    background: var(--panel-2);
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hand-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+  .hand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 10px;
+  }
+  .card-btn {
+    aspect-ratio: 3/4;
+    border-radius: 12px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 1.4rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--accent);
+    padding: 0;
+  }
+  .card-btn:disabled {
+    background: #475569;
+    color: #94a3b8;
+    border-color: #475569;
+    opacity: 0.7;
+  }
+
+  .log-box {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    max-height: 120px;
+    overflow-y: auto;
+    width: 100%;
+  }
+  .log-box div { padding: 2px 0; }
+
+  .result-title { text-align: center; font-size: 1.6rem; font-weight: 800; }
+  .result-title.win { color: var(--accent); }
+  .result-title.lose { color: var(--danger); }
+
+  .hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  footer { text-align: center; padding: 10px; font-size: 0.7rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>🃏 Cento Carte</header>
+<main>
+
+  <!-- SCREEN: Home -->
+  <div class="screen active" id="screen-home">
+    <div class="card-panel">
+      <label for="input-name">Il tuo nome</label>
+      <input type="text" id="input-name" placeholder="Es. Emmo" style="text-transform:none" maxlength="20" />
+    </div>
+    <div class="card-panel">
+      <button class="btn-primary" id="btn-create">Crea una nuova lobby</button>
+    </div>
+    <div class="card-panel">
+      <label for="input-code">Codice lobby</label>
+      <input type="text" id="input-code" placeholder="Es. AB3K" maxlength="4" />
+      <div style="height:10px"></div>
+      <button class="btn-secondary" id="btn-join">Entra nella lobby</button>
+    </div>
+    <div class="status-box" id="home-status"></div>
+    <div class="error-box" id="home-error"></div>
+    <p class="hint">Gioco cooperativo: si vince o si perde tutti insieme. Regola d'oro: non rivelate mai a voce quali carte avete in mano!</p>
+  </div>
+
+  <!-- SCREEN: Lobby -->
+  <div class="screen" id="screen-lobby">
+    <div class="card-panel" style="text-align:center">
+      <label>Codice da condividere</label>
+      <div class="lobby-code" id="lobby-code">----</div>
+      <p class="hint">Condividi questo codice + il link della pagina con gli altri giocatori.</p>
+    </div>
+    <div class="card-panel">
+      <label>Giocatori in lobby</label>
+      <div class="players-list" id="lobby-players"></div>
+    </div>
+    <button class="btn-primary" id="btn-start">Inizia partita</button>
+    <p class="hint" id="lobby-wait-msg">In attesa che l'host avvii la partita...</p>
+    <div class="error-box" id="lobby-error"></div>
+  </div>
+
+  <!-- SCREEN: Game -->
+  <div class="screen" id="screen-game">
+    <div class="pile-area">
+      <div class="pile-label">Ultima carta giocata</div>
+      <div class="pile-number" id="pile-top">0</div>
+      <div class="pile-sub" id="pile-sub">0 carte piazzate</div>
+    </div>
+
+    <div class="others-list" id="others-list"></div>
+
+    <div>
+      <div class="hand-label">La tua mano (tocca per giocare)</div>
+      <div class="hand-grid" id="hand-grid"></div>
+    </div>
+
+    <div class="log-box" id="log-box"></div>
+    <div class="error-box" id="game-error"></div>
+  </div>
+
+  <!-- SCREEN: Result -->
+  <div class="screen" id="screen-result">
+    <div class="card-panel" style="text-align:center">
+      <div class="result-title" id="result-title">-</div>
+      <p id="result-sub" class="hint" style="margin-top:10px"></p>
+    </div>
+    <button class="btn-primary" id="btn-restart">Nuova partita (stessa lobby)</button>
+  </div>
+
+</main>
+<footer>Cento Carte</footer>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  let myId = null;
+  let isHost = false;
+
+  const screens = {
+    home: document.getElementById('screen-home'),
+    lobby: document.getElementById('screen-lobby'),
+    game: document.getElementById('screen-game'),
+    result: document.getElementById('screen-result'),
+  };
+  function showScreen(name) {
+    Object.values(screens).forEach((s) => s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+  function flashError(el, msg) {
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+  }
+  function setStatus(el, msg) {
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+
+  socket.on('connect', () => { myId = socket.id; setStatus(document.getElementById('home-status'), ''); });
+  socket.on('connect_error', () => {
+    flashError(document.getElementById('home-error'), 'Impossibile collegarsi al server. Controlla la connessione internet e riprova.');
+  });
+  socket.on('disconnect', () => {
+    setStatus(document.getElementById('home-status'), 'Connessione persa, riconnessione in corso...');
+  });
+
+  // ---- Home: crea / entra ----
+  document.getElementById('btn-create').addEventListener('click', () => {
+    const name = document.getElementById('input-name').value.trim() || 'Giocatore';
+    setStatus(document.getElementById('home-status'), 'Creazione lobby in corso...');
+    socket.emit('createRoom', { name }, (res) => {
+      setStatus(document.getElementById('home-status'), '');
+      if (!res.ok) return flashError(document.getElementById('home-error'), res.error || 'Errore');
+    });
+  });
+  document.getElementById('btn-join').addEventListener('click', () => {
+    const name = document.getElementById('input-name').value.trim() || 'Giocatore';
+    const code = document.getElementById('input-code').value.trim().toUpperCase();
+    if (!code) return flashError(document.getElementById('home-error'), 'Inserisci un codice.');
+    setStatus(document.getElementById('home-status'), 'Connessione alla lobby in corso...');
+    socket.emit('joinRoom', { name, code }, (res) => {
+      setStatus(document.getElementById('home-status'), '');
+      if (!res.ok) return flashError(document.getElementById('home-error'), res.error || 'Errore');
+    });
+  });
+
+  // ---- Lobby ----
+  document.getElementById('btn-start').addEventListener('click', () => {
+    socket.emit('startGame', {}, (res) => {
+      if (res && !res.ok) flashError(document.getElementById('lobby-error'), res.error || 'Errore');
+    });
+  });
+
+  // ---- Result ----
+  document.getElementById('btn-restart').addEventListener('click', () => {
+    socket.emit('resetGame', {}, (res) => {
+      if (res && !res.ok) alert(res.error || 'Errore');
+    });
+  });
+
+  // ---- Gioco: giocare una carta ----
+  function requestPlayCard(card) {
+    socket.emit('playCard', { card }, (res) => {
+      if (res && !res.ok) flashError(document.getElementById('game-error'), res.error || 'Errore');
+    });
+  }
+
+  // ---- Stato dal server ----
+  socket.on('state', (state) => {
+    isHost = state.hostId === myId;
+    if (state.status === 'waiting') {
+      renderLobby(state);
+      showScreen('lobby');
+    } else if (state.status === 'playing') {
+      renderGame(state);
+      showScreen('game');
+    } else if (state.status === 'won' || state.status === 'lost') {
+      renderResult(state);
+      showScreen('result');
+    }
+  });
+
+  function renderLobby(state) {
+    document.getElementById('lobby-code').textContent = state.code;
+    const list = document.getElementById('lobby-players');
+    list.innerHTML = '';
+    state.players.forEach((p) => {
+      const row = document.createElement('div');
+      row.className = 'player-row' + (p.connected ? '' : ' offline');
+      row.innerHTML = `<span><span class="dot"></span>${escapeHtml(p.name)}${p.id === state.hostId ? ' 👑' : ''}</span><span>${p.connected ? 'connesso' : 'offline'}</span>`;
+      list.appendChild(row);
+    });
+    const startBtn = document.getElementById('btn-start');
+    const waitMsg = document.getElementById('lobby-wait-msg');
+    if (isHost) {
+      startBtn.style.display = 'block';
+      waitMsg.style.display = 'none';
+      startBtn.disabled = state.players.length < 2;
+    } else {
+      startBtn.style.display = 'none';
+      waitMsg.style.display = 'block';
+    }
+  }
+
+  function renderGame(state) {
+    document.getElementById('pile-top').textContent = state.pileTop;
+    document.getElementById('pile-sub').textContent = `${state.pileCount} carte piazzate su ${totalCards(state)}`;
+
+    const others = document.getElementById('others-list');
+    others.innerHTML = '';
+    state.players.filter((p) => p.id !== myId).forEach((p) => {
+      const chip = document.createElement('div');
+      chip.className = 'other-chip';
+      chip.textContent = `${p.name}: ${p.handCount} carte${p.connected ? '' : ' (offline)'}`;
+      others.appendChild(chip);
+    });
+
+    const me = state.players.find((p) => p.id === myId);
+    const grid = document.getElementById('hand-grid');
+    grid.innerHTML = '';
+    if (me && me.hand) {
+      me.hand.forEach((card) => {
+        const btn = document.createElement('button');
+        btn.className = 'card-btn';
+        btn.textContent = card;
+        btn.disabled = card <= state.pileTop;
+        btn.addEventListener('click', () => requestPlayCard(card));
+        grid.appendChild(btn);
+      });
+    }
+
+    const logBox = document.getElementById('log-box');
+    logBox.innerHTML = state.log.map((l) => `<div>${escapeHtml(l)}</div>`).join('');
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  function renderResult(state) {
+    const title = document.getElementById('result-title');
+    const sub = document.getElementById('result-sub');
+    if (state.status === 'won') {
+      title.textContent = '🎉 Avete vinto!';
+      title.className = 'result-title win';
+      sub.textContent = 'Tutte le carte sono state piazzate in ordine. Squadra perfetta!';
+    } else {
+      title.textContent = '💀 Partita persa';
+      title.className = 'result-title lose';
+      const remaining = state.players.reduce((sum, p) => sum + p.handCount, 0);
+      sub.textContent = `Nessuno aveva più una carta giocabile. Carte rimaste in mano: ${remaining}.`;
+    }
+    document.getElementById('btn-restart').style.display = (state.hostId === myId) ? 'block' : 'none';
+  }
+
+  function totalCards(state) {
+    return state.pileCount + state.players.reduce((s, p) => s + p.handCount, 0);
+  }
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+</script>
+</body>
+</html>

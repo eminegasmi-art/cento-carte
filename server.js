@@ -53,7 +53,9 @@ function stateFor(room, socketId) {
       id: p.id,
       name: p.name,
       handCount: p.hand.length,
-      hand: p.id === socketId ? [...p.hand].sort((a, b) => a - b) : undefined,
+      // Niente ordinamento: le carte arrivano nell'ordine di distribuzione
+      // (già casuale). Il client le lascia riordinare a piacere in mano.
+      hand: p.id === socketId ? [...p.hand] : undefined,
       connected: p.connected,
     })),
   };

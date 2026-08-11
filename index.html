@@ -163,12 +163,24 @@
     justify-content: center;
     border: 3px solid var(--accent);
     padding: 0;
+    touch-action: none;
+    user-select: none;
+  }
+  .card-btn.dragging {
+    opacity: 0.6;
+    transform: scale(1.06);
   }
   .card-btn:disabled {
     background: #475569;
     color: #94a3b8;
     border-color: #475569;
     opacity: 0.7;
+  }
+  .card-btn-blocked {
+    background: #3f2530;
+    color: #f0999b;
+    border-color: var(--danger);
+    font-size: 1.05rem;
   }
 
   .log-box {
@@ -248,7 +260,7 @@
     <div class="others-list" id="others-list"></div>
 
     <div>
-      <div class="hand-label">La tua mano (tocca per giocare)</div>
+      <div class="hand-label">La tua mano (tocca per giocare, trascina per riordinare)</div>
       <div class="hand-grid" id="hand-grid"></div>
     </div>
 
@@ -263,6 +275,7 @@
       <p id="result-sub" class="hint" style="margin-top:10px"></p>
     </div>
     <button class="btn-primary" id="btn-restart">Nuova partita (stessa lobby)</button>
+    <p class="hint" id="result-wait-msg">In attesa che l'host inizi una nuova partita...</p>
   </div>
 
 </main>
@@ -273,6 +286,62 @@
   const socket = io();
   let myId = null;
   let isHost = false;
+
+  // ---- Ordine della mano scelto dal giocatore (solo locale, non sincronizzato) ----
+  let myHandOrder = [];
+  let didDrag = false;
+
+  // Le carte NON vengono ordinate dal server. Manteniamo un ordine locale
+  // scelto dal giocatore: quando arriva una nuova mano (carta mai vista
+  // prima) ripartiamo dall'ordine di distribuzione; quando una carta viene
+  // giocata la togliamo mantenendo l'ordine delle rimanenti.
+  function syncHandOrder(serverHand) {
+    const serverSet = new Set(serverHand);
+    const hasNewCard = serverHand.some((c) => !myHandOrder.includes(c));
+    if (hasNewCard) {
+      myHandOrder = [...serverHand];
+    } else {
+      myHandOrder = myHandOrder.filter((c) => serverSet.has(c));
+    }
+  }
+
+  // Trascinamento con Pointer Events (funziona sia con dito che mouse,
+  // a differenza del drag-and-drop HTML5 che su mobile è inaffidabile).
+  // IMPORTANTE: durante il trascinamento spostiamo il bottone esistente nel
+  // DOM (insertBefore), senza mai ricrearlo/ridisegnare tutta la griglia:
+  // ricreare il nodo trascinato interromperebbe la pointer capture attiva.
+  function attachDragToReorder(btn, card) {
+    let startX = 0, startY = 0, dragging = false;
+    btn.addEventListener('pointerdown', (e) => {
+      startX = e.clientX; startY = e.clientY; dragging = false;
+      btn.setPointerCapture(e.pointerId);
+    });
+    btn.addEventListener('pointermove', (e) => {
+      if (!dragging) {
+        if (Math.abs(e.clientX - startX) > 8 || Math.abs(e.clientY - startY) > 8) {
+          dragging = true; didDrag = true; btn.classList.add('dragging');
+        } else {
+          return;
+        }
+      }
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      const targetBtn = target && target.closest('.card-btn');
+      if (targetBtn && targetBtn !== btn && targetBtn.parentElement === btn.parentElement) {
+        const grid = btn.parentElement;
+        const rect = targetBtn.getBoundingClientRect();
+        const insertBefore = e.clientX < rect.left + rect.width / 2;
+        grid.insertBefore(btn, insertBefore ? targetBtn : targetBtn.nextSibling);
+        myHandOrder = Array.from(grid.children).map((el) => Number(el.dataset.card));
+      }
+    });
+    const endDrag = () => {
+      btn.classList.remove('dragging');
+      if (dragging) setTimeout(() => { didDrag = false; }, 0);
+      dragging = false;
+    };
+    btn.addEventListener('pointerup', endDrag);
+    btn.addEventListener('pointercancel', endDrag);
+  }
 
   const screens = {
     home: document.getElementById('screen-home'),
@@ -344,7 +413,9 @@
   }
 
   // ---- Stato dal server ----
+  let lastState = null;
   socket.on('state', (state) => {
+    lastState = state;
     isHost = state.hostId === myId;
     if (state.status === 'waiting') {
       renderLobby(state);
@@ -397,12 +468,25 @@
     const grid = document.getElementById('hand-grid');
     grid.innerHTML = '';
     if (me && me.hand) {
-      me.hand.forEach((card) => {
+      syncHandOrder(me.hand);
+      myHandOrder.forEach((card) => {
+        const isBlocked = card <= state.pileTop;
         const btn = document.createElement('button');
-        btn.className = 'card-btn';
-        btn.textContent = card;
-        btn.disabled = card <= state.pileTop;
-        btn.addEventListener('click', () => requestPlayCard(card));
+        btn.className = 'card-btn' + (isBlocked ? ' card-btn-blocked' : '');
+        btn.textContent = isBlocked ? `${card} 🚫` : card;
+        btn.dataset.card = card;
+        // NB: il bottone resta cliccabile anche se bloccato (niente
+        // "disabled"), così toccandolo spieghiamo perché non si può più
+        // giocare invece di lasciarlo silenzioso e poco chiaro.
+        btn.addEventListener('click', () => {
+          if (didDrag) { didDrag = false; return; } // era un trascinamento, non un tocco
+          if (isBlocked) {
+            flashError(document.getElementById('game-error'), `La carta ${card} è bloccata per sempre: la pila è già arrivata a ${state.pileTop}, non si torna indietro.`);
+          } else {
+            requestPlayCard(card);
+          }
+        });
+        attachDragToReorder(btn, card);
         grid.appendChild(btn);
       });
     }
@@ -425,7 +509,9 @@
       const remaining = state.players.reduce((sum, p) => sum + p.handCount, 0);
       sub.textContent = `Nessuno aveva più una carta giocabile. Carte rimaste in mano: ${remaining}.`;
     }
-    document.getElementById('btn-restart').style.display = (state.hostId === myId) ? 'block' : 'none';
+    const amHost = state.hostId === myId;
+    document.getElementById('btn-restart').style.display = amHost ? 'block' : 'none';
+    document.getElementById('result-wait-msg').style.display = amHost ? 'none' : 'block';
   }
 
   function totalCards(state) {

@@ -5,7 +5,13 @@ const path = require('path');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { shuffledDeck, pileTop: pileTopOf, anyPlayableCard: anyPlayableCardOf, allHandsEmpty: allHandsEmptyOf } = require('./gameLogic');
+const {
+  shuffledDeck,
+  pileTop: pileTopOf,
+  allHandsEmpty: allHandsEmptyOf,
+  strandedCards: strandedCardsOf,
+  maxRound,
+} = require('./gameLogic');
 
 const app = express();
 const server = http.createServer(app);
@@ -30,13 +36,26 @@ function pileTop(room) {
   return pileTopOf(room.pile);
 }
 
-// Un giocatore è "bloccato" se non ha nessuna carta più alta della cima della pila
-function anyPlayableCard(room) {
-  return anyPlayableCardOf(room.players.map((p) => p.hand), room.pile);
-}
-
 function allHandsEmpty(room) {
   return allHandsEmptyOf(room.players.map((p) => p.hand));
+}
+
+// Carte rimaste bloccate per sempre (valore <= cima pila) in QUALSIASI mano,
+// con il nome di chi le possiede: regola severa, un solo blocco finisce la run.
+function strandedCards(room) {
+  const list = strandedCardsOf(room.players.map((p) => p.hand), room.pile);
+  return list.map((s) => ({ name: room.players[s.playerIndex].name, card: s.card }));
+}
+
+// Distribuisce `room.round` carte a testa da un mazzo rimescolato da zero
+// e riporta lo stato a 'playing'.
+function dealRound(room) {
+  const deck = shuffledDeck();
+  room.players.forEach((p) => {
+    p.hand = deck.splice(0, room.round);
+  });
+  room.pile = [];
+  room.status = 'playing';
 }
 
 // Vista pubblica dello stato, personalizzata per il destinatario:
@@ -46,6 +65,9 @@ function stateFor(room, socketId) {
     code: room.code,
     status: room.status,
     hostId: room.hostId,
+    round: room.round,
+    bestRound: room.bestRound,
+    maxRound: maxRound(room.players.length),
     pileTop: pileTop(room),
     pileCount: room.pile.length,
     log: room.log.slice(-8),
@@ -79,8 +101,10 @@ io.on('connection', (socket) => {
       code,
       players: [{ id: socket.id, name: (name || 'Giocatore').slice(0, 20), hand: [], connected: true }],
       pile: [],
-      status: 'waiting', // waiting | playing | won | lost
+      status: 'waiting', // waiting | playing | round_complete | campaign_complete | lost
       hostId: socket.id,
+      round: 0,
+      bestRound: 0,
       log: [],
     };
     rooms[code] = room;
@@ -111,14 +135,10 @@ io.on('connection', (socket) => {
     if (socket.id !== room.hostId) return cb && cb({ ok: false, error: 'Solo chi ha creato la lobby può iniziare.' });
     if (room.players.length < 2) return cb && cb({ ok: false, error: 'Servono almeno 2 giocatori.' });
 
-    const deck = shuffledDeck();
-    room.players.forEach((p) => {
-      p.hand = deck.splice(0, 5);
-    });
-    room.pile = [];
-    room.status = 'playing';
+    room.round = 1;
+    dealRound(room);
     room.log = [];
-    pushLog(room, 'La partita è iniziata! Buona fortuna, giocate senza rivelarvi le carte in mano.');
+    pushLog(room, `La run è iniziata! Round 1: 1 carta a testa. Giocate senza rivelarvi le carte in mano.`);
     cb && cb({ ok: true });
     broadcastState(room);
   });
@@ -141,14 +161,40 @@ io.on('connection', (socket) => {
     room.pile.push(card);
     pushLog(room, `${player.name} ha giocato ${card}.`);
 
-    if (allHandsEmpty(room)) {
-      room.status = 'won';
-      pushLog(room, '🎉 Tutte le carte piazzate! Avete vinto insieme.');
-    } else if (!anyPlayableCard(room)) {
+    const stranded = strandedCards(room);
+    if (stranded.length > 0) {
+      // Regola severa: appena una carta resta bloccata per sempre (in
+      // qualunque mano), la run finisce immediatamente.
       room.status = 'lost';
-      pushLog(room, '💀 Nessuno ha più una carta giocabile. Partita persa.');
+      room.bestRound = Math.max(room.bestRound, room.round);
+      const list = stranded.map((s) => `${s.card} (${s.name})`).join(', ');
+      pushLog(room, `💀 ${player.name} ha giocato ${card} e bloccato per sempre: ${list}. Game over al Round ${room.round}.`);
+    } else if (allHandsEmpty(room)) {
+      room.bestRound = Math.max(room.bestRound, room.round);
+      const top = maxRound(room.players.length);
+      if (room.round >= top) {
+        room.status = 'campaign_complete';
+        pushLog(room, `👑 Avete conquistato il Regno! Tutti i round completati fino al Round ${top}.`);
+      } else {
+        room.status = 'round_complete';
+        pushLog(room, `🏆 Round ${room.round} completato! Pronti per il Round ${room.round + 1}?`);
+      }
     }
 
+    cb && cb({ ok: true });
+    broadcastState(room);
+  });
+
+  socket.on('nextRound', (_data, cb) => {
+    const room = rooms[socket.data.roomCode];
+    if (!room) return cb && cb({ ok: false, error: 'Lobby non trovata.' });
+    if (socket.id !== room.hostId) return cb && cb({ ok: false, error: "Solo l'host può avviare il round successivo." });
+    if (room.status !== 'round_complete') return cb && cb({ ok: false, error: 'Non è il momento di passare al round successivo.' });
+
+    room.round += 1;
+    dealRound(room);
+    room.log = [];
+    pushLog(room, `Round ${room.round}! ${room.round} carte a testa.`);
     cb && cb({ ok: true });
     broadcastState(room);
   });
@@ -158,10 +204,11 @@ io.on('connection', (socket) => {
     if (!room) return cb && cb({ ok: false });
     if (socket.id !== room.hostId) return cb && cb({ ok: false, error: 'Solo l\'host può ricominciare.' });
     room.status = 'waiting';
+    room.round = 0;
     room.pile = [];
     room.players.forEach((p) => (p.hand = []));
     room.log = [];
-    pushLog(room, 'Pronti per una nuova partita.');
+    pushLog(room, room.bestRound > 0 ? `Pronti per una nuova run. Record da battere: Round ${room.bestRound}.` : 'Pronti per una nuova run.');
     cb && cb({ ok: true });
     broadcastState(room);
   });

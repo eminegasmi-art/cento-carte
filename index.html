@@ -260,7 +260,7 @@
     background-size: cover, cover;
   }
 
-  .seats-ring { position: relative; height: 64px; }
+  .seats-ring { position: relative; height: 86px; margin-bottom: 8px; }
   .seat-avatar {
     position: absolute;
     transform: translateX(-50%);
@@ -315,11 +315,15 @@
     background-repeat: no-repeat;
     filter: drop-shadow(0 6px 6px rgba(0,0,0,0.6));
     transition: transform 0.15s;
+    color: var(--ink);
   }
   .table-card.filled {
     background-image: url('card-frame-gold.png');
   }
-  .table-card.filled .card-face-value { font-size: 2.1rem; }
+  .table-card.filled .card-face-value {
+    font-size: 2.6rem;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  }
   .table-card.filled .card-face-emblem .icon-svg { width: 30px; height: 30px; }
   .table-card.empty {
     background-image: url('card-back.png');

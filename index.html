@@ -254,7 +254,7 @@
     padding: 38px 10px 20px;
     background-image:
       linear-gradient(180deg, rgba(10,6,3,0.25) 0%, rgba(10,6,3,0.55) 55%, rgba(8,5,2,0.8) 100%),
-      url('assets/bg-tavern.jpg');
+      url('bg-tavern.jpg');
     background-repeat: no-repeat, no-repeat;
     background-position: center, center 20%;
     background-size: cover, cover;
@@ -317,12 +317,12 @@
     transition: transform 0.15s;
   }
   .table-card.filled {
-    background-image: url('assets/card-frame-gold.png');
+    background-image: url('card-frame-gold.png');
   }
   .table-card.filled .card-face-value { font-size: 2.1rem; }
   .table-card.filled .card-face-emblem .icon-svg { width: 30px; height: 30px; }
   .table-card.empty {
-    background-image: url('assets/card-back.png');
+    background-image: url('card-back.png');
   }
   .table-card.empty .card-face-value {
     display: none;
@@ -356,7 +356,7 @@
     flex: 0 0 auto;
     width: 66px;
     aspect-ratio: 3/4;
-    background-image: url('assets/card-frame-gold.png');
+    background-image: url('card-frame-gold.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
     color: var(--ink);
@@ -381,7 +381,7 @@
     filter: drop-shadow(0 6px 8px rgba(0,0,0,0.6));
   }
   .card-btn-blocked {
-    background-image: url('assets/card-frame-blocked.png');
+    background-image: url('card-frame-blocked.png');
     color: var(--blood-light);
   }
 
@@ -457,7 +457,7 @@
 </head>
 <body>
 <header>
-  <img class="logo-banner-img" src="assets/logo-banner.png" alt="" />
+  <img class="logo-banner-img" src="logo-banner.png" alt="" />
   <span class="logo-text">Cento Carte del Regno</span>
 </header>
 <main>
@@ -587,7 +587,7 @@
 
   // Ritratti per gli avatar: uno in base alla posizione del giocatore
   // nell'elenco, stabile per tutti i client (stesso ordine per tutti).
-  const AVATAR_IMAGES = Array.from({ length: 9 }, (_, i) => `assets/avatar-${i + 1}.png`);
+  const AVATAR_IMAGES = Array.from({ length: 9 }, (_, i) => `avatar-${i + 1}.png`);
 
   // Markup della "faccia" di una carta stile medievale: indici agli angoli,
   // piccolo stemma decorativo dietro il numero (⚠ diventa un'icona quando

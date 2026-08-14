@@ -9,25 +9,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=IM+Fell+English&display=swap" rel="stylesheet">
 <style>
   :root {
-    --wood-dark: #1a0f06;
-    --wood-mid: #35210f;
-    --wood-light: #4d3419;
-    --parchment: #ece0c2;
-    --parchment-2: #e2d2a8;
-    --ink: #2a1c10;
-    --gold: #b3892c;
-    --gold-light: #dcb45e;
-    --blood: #6e2020;
-    --blood-light: #c96b6b;
-    --text: #ece2cc;
-    --muted: #a6926c;
-    /* Texture vere (PNG tileable trasparenti). Se l'immagine non si carica
-       (rete assente/bloccata) il layer resta semplicemente trasparente e
-       sotto rimane visibile il gradiente CSS già presente: fallback
-       automatico, nessun JS necessario. */
-    --tex-wood: url('https://www.transparenttextures.com/patterns/dark-wood.png');
-    --tex-parchment: url('https://www.transparenttextures.com/patterns/old-mathematics.png');
-    --tex-leather: url('https://www.transparenttextures.com/patterns/leather.png');
+    --wood-dark: #241a10;
+    --wood-mid: #3a2b1a;
+    --wood-light: #513c24;
+    --parchment: #efe4c6;
+    --parchment-2: #e7d8ad;
+    --ink: #241a10;
+    --gold: #c99a3a;
+    --gold-light: #e6bb63;
+    --blood: #7a2b2b;
+    --blood-light: #d97b7b;
+    --text: #e9dfc7;
+    --muted: #9c8d6f;
+    /* Stile "card crawler": sfondo scuro e pulito, poche texture, contorni
+       netti scuri sulle carte invece di bordi dorati sottili. */
+    --bg-1: #14100c;
+    --bg-2: #1f1712;
     --tex-stone: url('https://www.transparenttextures.com/patterns/old-wall.png');
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -39,9 +36,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background:
-      var(--tex-wood),
-      linear-gradient(180deg, #33200f, #150c04);
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, var(--bg-2), var(--bg-1) 70%);
   }
   header {
     padding: 16px;
@@ -51,8 +46,9 @@
     font-size: 1.2rem;
     letter-spacing: 1px;
     color: var(--gold-light);
-    border-bottom: 1px solid var(--gold);
-    background: linear-gradient(180deg, #22140a, #150c05);
+    border-bottom: 2px solid var(--ink);
+    background: var(--bg-1);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.4);
   }
   main {
     flex: 1;
@@ -69,12 +65,12 @@
   .screen.active { display: flex; }
 
   .card-panel {
-    background: var(--tex-wood), linear-gradient(160deg, var(--wood-light), var(--wood-mid));
-    border: 1px solid var(--gold);
-    border-radius: 8px;
+    background: linear-gradient(160deg, var(--wood-light), var(--wood-mid));
+    border: 2px solid var(--ink);
+    border-radius: 10px;
     padding: 18px;
     width: 100%;
-    box-shadow: inset 0 0 14px rgba(0,0,0,0.35);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.35);
   }
   label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 6px; }
   input[type="text"] {
@@ -101,15 +97,30 @@
     letter-spacing: 0.5px;
   }
   button:disabled { opacity: 0.45; }
+  /* Bottoni "chunky", stile app di gioco mobile: bordo scuro netto, un
+     bordo inferiore più spesso che simula lo spessore, si "schiaccia"
+     al tocco. */
   .btn-primary {
     background: linear-gradient(180deg, var(--gold-light), var(--gold));
     color: var(--ink);
-    border: 1px solid #7d5e1c;
+    border: 2px solid var(--ink);
+    border-bottom-width: 5px;
+    transition: transform 0.08s, border-bottom-width 0.08s, margin-top 0.08s;
+  }
+  .btn-primary:active:not(:disabled) {
+    border-bottom-width: 2px;
+    margin-top: 3px;
   }
   .btn-secondary {
-    background: var(--tex-wood), linear-gradient(180deg, var(--wood-light), var(--wood-mid));
+    background: linear-gradient(180deg, var(--wood-light), var(--wood-mid));
     color: var(--text);
-    border: 1px solid var(--gold);
+    border: 2px solid var(--ink);
+    border-bottom-width: 5px;
+    transition: transform 0.08s, border-bottom-width 0.08s, margin-top 0.08s;
+  }
+  .btn-secondary:active:not(:disabled) {
+    border-bottom-width: 2px;
+    margin-top: 3px;
   }
   .btn-link {
     background: none;
@@ -131,20 +142,22 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    padding: 24px 16px;
-    border-radius: 10px;
-    border: 1px solid var(--gold);
-    background: var(--tex-wood), linear-gradient(160deg, var(--wood-light), var(--wood-mid));
+    padding: 22px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--ink);
+    border-bottom-width: 5px;
+    background: linear-gradient(160deg, var(--wood-light), var(--wood-mid));
     color: var(--gold-light);
     font-family: 'Cinzel', serif;
     font-weight: 700;
     font-size: 1.05rem;
+    transition: transform 0.08s, border-bottom-width 0.08s, margin-top 0.08s;
   }
+  .choice-btn:active { border-bottom-width: 2px; margin-top: 3px; }
   .choice-btn .icon-svg { width: 30px; height: 30px; }
   .choice-btn.primary {
     background: linear-gradient(160deg, var(--gold-light), var(--gold));
     color: var(--ink);
-    border-color: #7d5e1c;
   }
 
   .error-box {
@@ -181,7 +194,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--tex-wood), var(--wood-mid);
+    background: var(--wood-mid);
     border: 1px solid var(--gold);
     padding: 10px 14px;
     border-radius: 6px;
@@ -224,17 +237,15 @@
     width: 100%;
     border-radius: 14px;
     overflow: hidden;
-    border: 1px solid var(--gold);
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+    border: 2px solid var(--ink);
     padding: 38px 10px 20px;
     background-image:
-      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,175,90,0.22), transparent 60%),
-      linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.8) 100%),
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,175,90,0.18), transparent 60%),
       var(--tex-stone),
-      linear-gradient(180deg, #2c2015 0%, #180f08 50%, #0e0906 100%);
-    background-repeat: no-repeat, no-repeat, repeat, no-repeat;
-    background-position: center, center, center, center;
-    background-size: cover, cover, auto, cover;
+      linear-gradient(180deg, #241a11 0%, #150f0a 60%, #0d0906 100%);
+    background-repeat: no-repeat, repeat, no-repeat;
+    background-position: center, center, center;
+    background-size: cover, auto, cover;
   }
 
   .seats-ring { position: relative; height: 64px; }
@@ -258,7 +269,7 @@
     font-weight: 700;
     font-size: 0.85rem;
     color: var(--ink);
-    border: 1px solid var(--gold);
+    border: 2px solid var(--ink);
     box-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
   .seat-avatar .seat-name {
@@ -285,11 +296,10 @@
     aspect-ratio: 3 / 2;
     border-radius: 50%;
     background:
-      var(--tex-wood),
       radial-gradient(ellipse at center, rgba(0,0,0,0.15), transparent 70%),
       linear-gradient(160deg, var(--wood-light), var(--wood-mid));
-    border: 2px solid var(--gold);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.5);
+    border: 3px solid var(--ink);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -308,9 +318,9 @@
     transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
   }
   .table-card.filled {
-    background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
-    border: 2px solid var(--gold);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+    background: linear-gradient(160deg, var(--parchment), var(--parchment-2));
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.4);
   }
   .table-card.filled .card-face-value { font-size: 2.2rem; }
   .table-card.filled .card-face-emblem .icon-svg { width: 34px; height: 34px; }
@@ -354,16 +364,16 @@
     width: 60px;
     aspect-ratio: 3/4;
     border-radius: 7px;
-    background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
+    background: linear-gradient(160deg, var(--parchment), var(--parchment-2));
     color: var(--ink);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--gold);
+    border: 2.5px solid var(--ink);
     padding: 0;
     touch-action: none;
     user-select: none;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.4);
     margin-left: -22px;
     transform-origin: bottom center;
     transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px));
@@ -377,9 +387,9 @@
     box-shadow: 0 6px 12px rgba(0,0,0,0.55);
   }
   .card-btn-blocked {
-    background: var(--tex-leather), linear-gradient(160deg, #4c2626, #331a1a);
+    background: linear-gradient(160deg, #5a3232, #3f2222);
     color: var(--blood-light);
-    border-color: var(--blood-light);
+    border-color: #2a1414;
   }
 
   .card-face-corner {
@@ -416,7 +426,7 @@
   }
 
   .log-box {
-    background: var(--tex-wood), var(--wood-mid);
+    background: var(--wood-mid);
     border: 1px solid var(--gold);
     border-radius: 6px;
     padding: 12px 14px;

@@ -9,20 +9,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=IM+Fell+English&display=swap" rel="stylesheet">
 <style>
   :root {
-    --wood-dark: #201206;
-    --wood-mid: #3d2414;
-    --wood-light: #5a3a20;
-    --parchment: #ecd9b0;
-    --parchment-2: #e3cc98;
-    --ink: #2c1c0f;
-    --gold: #c9a227;
-    --gold-light: #e8c96a;
-    --blood: #7a1f1f;
-    --blood-light: #d97a7a;
-    --green: #4a7a3a;
-    --green-light: #8fd97a;
-    --text: #f0e6d2;
-    --muted: #b8a67e;
+    --wood-dark: #1a0f06;
+    --wood-mid: #35210f;
+    --wood-light: #4d3419;
+    --parchment: #ece0c2;
+    --parchment-2: #e2d2a8;
+    --ink: #2a1c10;
+    --gold: #b3892c;
+    --gold-light: #dcb45e;
+    --blood: #6e2020;
+    --blood-light: #c96b6b;
+    --text: #ece2cc;
+    --muted: #a6926c;
     /* Texture vere (PNG tileable trasparenti). Se l'immagine non si carica
        (rete assente/bloccata) il layer resta semplicemente trasparente e
        sotto rimane visibile il gradiente CSS già presente: fallback
@@ -43,22 +41,18 @@
     min-height: 100vh;
     background:
       var(--tex-wood),
-      repeating-linear-gradient(90deg, rgba(0,0,0,0.10) 0px, rgba(0,0,0,0.10) 1px, transparent 2px, transparent 5px),
-      repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, transparent 2px, transparent 40px),
-      linear-gradient(180deg, #402715, #1c1006);
+      linear-gradient(180deg, #33200f, #150c04);
   }
   header {
     padding: 16px;
     text-align: center;
     font-family: 'Cinzel', serif;
-    font-weight: 800;
-    font-size: 1.3rem;
+    font-weight: 700;
+    font-size: 1.2rem;
     letter-spacing: 1px;
     color: var(--gold-light);
-    border-bottom: 3px double var(--gold);
-    text-shadow: 0 2px 2px rgba(0,0,0,0.6);
-    background: var(--tex-leather), linear-gradient(180deg, #2a1808, #140b03);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    border-bottom: 1px solid var(--gold);
+    background: linear-gradient(180deg, #22140a, #150c05);
   }
   main {
     flex: 1;
@@ -76,18 +70,18 @@
 
   .card-panel {
     background: var(--tex-wood), linear-gradient(160deg, var(--wood-light), var(--wood-mid));
-    border: 2px solid var(--gold);
+    border: 1px solid var(--gold);
     border-radius: 8px;
     padding: 18px;
     width: 100%;
-    box-shadow: inset 0 0 18px rgba(0,0,0,0.4);
+    box-shadow: inset 0 0 14px rgba(0,0,0,0.35);
   }
-  label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 6px; font-family: 'IM Fell English', serif; }
+  label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 6px; }
   input[type="text"] {
     width: 100%;
     padding: 14px;
     border-radius: 6px;
-    border: 2px solid var(--gold);
+    border: 1px solid var(--gold);
     background: var(--parchment);
     color: var(--ink);
     font-size: 1.1rem;
@@ -106,17 +100,16 @@
     font-family: 'Cinzel', serif;
     letter-spacing: 0.5px;
   }
-  button:disabled { opacity: 0.5; }
+  button:disabled { opacity: 0.45; }
   .btn-primary {
     background: linear-gradient(180deg, var(--gold-light), var(--gold));
     color: var(--ink);
-    border: 2px solid #8a6b14;
-    box-shadow: 0 3px 0 #5e4a12;
+    border: 1px solid #7d5e1c;
   }
   .btn-secondary {
     background: var(--tex-wood), linear-gradient(180deg, var(--wood-light), var(--wood-mid));
     color: var(--text);
-    border: 2px solid var(--gold);
+    border: 1px solid var(--gold);
   }
   .btn-link {
     background: none;
@@ -138,26 +131,25 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    padding: 26px 16px;
-    border-radius: 12px;
-    border: 3px double var(--gold);
+    padding: 24px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--gold);
     background: var(--tex-wood), linear-gradient(160deg, var(--wood-light), var(--wood-mid));
     color: var(--gold-light);
     font-family: 'Cinzel', serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    box-shadow: inset 0 0 18px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.35);
+    font-weight: 700;
+    font-size: 1.05rem;
   }
-  .choice-btn .icon { font-size: 2rem; }
+  .choice-btn .icon-svg { width: 30px; height: 30px; }
   .choice-btn.primary {
-    background: var(--tex-leather), linear-gradient(160deg, var(--gold-light), var(--gold));
+    background: linear-gradient(160deg, var(--gold-light), var(--gold));
     color: var(--ink);
-    border-color: #8a6b14;
+    border-color: #7d5e1c;
   }
 
   .error-box {
     background: #4a141422;
-    border: 2px solid var(--blood);
+    border: 1px solid var(--blood);
     color: var(--blood-light);
     padding: 10px 14px;
     border-radius: 6px;
@@ -165,8 +157,8 @@
     display: none;
   }
   .status-box {
-    background: #c9a22722;
-    border: 2px solid var(--gold);
+    background: #b3892c1f;
+    border: 1px solid var(--gold);
     color: var(--gold-light);
     padding: 10px 14px;
     border-radius: 6px;
@@ -178,12 +170,11 @@
   .lobby-code {
     text-align: center;
     font-family: 'Cinzel', serif;
-    font-size: 2.4rem;
-    font-weight: 800;
+    font-size: 2.2rem;
+    font-weight: 700;
     letter-spacing: 6px;
     color: var(--gold-light);
     margin: 4px 0;
-    text-shadow: 0 2px 2px rgba(0,0,0,0.5);
   }
   .players-list { display: flex; flex-direction: column; gap: 8px; }
   .player-row {
@@ -195,8 +186,13 @@
     padding: 10px 14px;
     border-radius: 6px;
   }
-  .player-row .dot { width: 8px; height: 8px; border-radius: 50%; background: #7ec96a; display: inline-block; margin-right: 8px; }
+  .player-row .dot { width: 7px; height: 7px; border-radius: 50%; background: #7ec96a; display: inline-block; margin-right: 8px; }
   .player-row.offline .dot { background: var(--muted); }
+
+  /* ---- Icone SVG condivise: stile a linea sottile, colore ereditato via
+     currentColor, così restano coerenti col resto invece delle emoji che
+     ogni telefono disegna diversamente. ---- */
+  .icon-svg { display: inline-block; vertical-align: middle; flex-shrink: 0; }
 
   .top-row {
     display: flex;
@@ -206,86 +202,64 @@
     width: 100%;
   }
   .level-chip {
-    background: linear-gradient(180deg, var(--gold-light), var(--gold));
-    color: var(--ink);
-    border: 2px solid #8a6b14;
+    background: var(--wood-mid);
+    color: var(--gold-light);
+    border: 1px solid var(--gold);
     border-radius: 999px;
-    padding: 8px 16px;
+    padding: 7px 16px;
     font-family: 'Cinzel', serif;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     white-space: nowrap;
   }
-  .lives-row { font-size: 1.4rem; letter-spacing: 3px; }
+  .lives-row { display: flex; align-items: center; gap: 4px; }
+  .lives-row .icon-svg { width: 19px; height: 19px; color: var(--blood-light); }
 
-  /* ---- La taverna: la "stanza" con il tavolo al centro e i giocatori
-     seduti intorno, vista dal proprio posto (si vedono solo gli altri). ---- */
+  /* ---- La taverna: sfondo di pietra con luce calda, tavolo di legno al
+     centro e i giocatori seduti intorno (visti dal proprio posto). Niente
+     oggetti letterali (torce/boccali) disegnati sopra: solo luce e
+     materiali, per un effetto più sobrio. ---- */
   .tavern {
     position: relative;
     width: 100%;
-    border-radius: 16px;
+    border-radius: 14px;
     overflow: hidden;
-    border: 3px solid var(--gold);
-    box-shadow: inset 0 0 34px rgba(0,0,0,0.65), 0 4px 10px rgba(0,0,0,0.5);
-    padding: 40px 10px 18px;
-    /* Ambiente "taverna" tutto in CSS: bagliore di torce in alto, parete di
-       pietra vera (texture) che sfuma verso il pavimento più scuro in
-       basso. Niente foto esterne: restano coerenti con lo stile disegnato
-       del resto dell'interfaccia invece di stonare come un collage. */
+    border: 1px solid var(--gold);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+    padding: 38px 10px 20px;
     background-image:
-      radial-gradient(ellipse 65% 45% at 50% 2%, rgba(255,170,80,0.32), transparent 62%),
-      linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0.78) 100%),
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,175,90,0.22), transparent 60%),
+      linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.8) 100%),
       var(--tex-stone),
-      linear-gradient(180deg, #362619 0%, #1c130b 45%, #100a05 100%);
+      linear-gradient(180deg, #2c2015 0%, #180f08 50%, #0e0906 100%);
     background-repeat: no-repeat, no-repeat, repeat, no-repeat;
     background-position: center, center, center, center;
     background-size: cover, cover, auto, cover;
   }
-  .tavern .deco {
-    position: absolute;
-    font-size: 1.3rem;
-    opacity: 0.9;
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.7));
-    pointer-events: none;
-    z-index: 1;
-  }
-  .tavern::before, .tavern::after {
-    content: '🔥';
-    position: absolute;
-    top: 6px;
-    font-size: 1.1rem;
-    filter: drop-shadow(0 0 6px rgba(255,140,40,0.9));
-    animation: torchFlicker 1.8s ease-in-out infinite;
-    z-index: 2;
-  }
-  .tavern::before { left: 10px; }
-  .tavern::after { right: 10px; animation-delay: 0.6s; }
-  @keyframes torchFlicker {
-    0%, 100% { opacity: 0.85; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-  }
 
-  .seats-ring { position: relative; height: 70px; }
+  .seats-ring { position: relative; height: 64px; }
   .seat-avatar {
     position: absolute;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
     width: 56px;
   }
   .seat-avatar .figure {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: var(--tex-leather), radial-gradient(circle at 35% 30%, #8a6a45, #3a2712);
-    border: 2px solid var(--gold);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.55);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--ink);
+    border: 1px solid var(--gold);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
   .seat-avatar .seat-name {
     font-size: 0.6rem;
@@ -299,86 +273,70 @@
   }
   .seat-avatar .seat-count {
     font-size: 0.58rem;
-    color: var(--text);
-    background: rgba(0,0,0,0.45);
-    border: 1px solid var(--gold);
-    border-radius: 8px;
-    padding: 1px 6px;
+    color: var(--muted);
   }
   .seat-avatar.offline .figure { opacity: 0.35; filter: grayscale(1); }
 
   .table-wrap { display: flex; flex-direction: column; align-items: center; }
   .table-surface {
     text-align: center;
-    width: 82%;
-    max-width: 280px;
+    width: 80%;
+    max-width: 270px;
     aspect-ratio: 3 / 2;
     border-radius: 50%;
     background:
       var(--tex-wood),
       radial-gradient(ellipse at center, rgba(0,0,0,0.15), transparent 70%),
       linear-gradient(160deg, var(--wood-light), var(--wood-mid));
-    border: 4px solid var(--gold);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 0 24px rgba(0,0,0,0.55);
+    border: 2px solid var(--gold);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.5);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
   }
-  .table-caption { font-size: 0.78rem; color: var(--muted); padding: 0 10px; }
+  .table-caption { margin-top: 8px; font-size: 0.76rem; color: var(--muted); padding: 0 10px; }
 
-  /* La carta al centro del tavolo: rappresenta l'ultima carta piazzata
-     nella sequenza, disegnata come una vera carta invece di un numero in
-     un riquadro con scritta. */
+  /* La carta al centro del tavolo: rappresenta l'ultima carta piazzata. */
   .table-card {
-    width: 92px;
+    position: relative;
+    width: 88px;
     aspect-ratio: 3 / 4;
-    border-radius: 10px;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
   }
   .table-card.filled {
-    position: relative;
     background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
-    border: 3px solid var(--gold);
-    box-shadow: inset 0 0 0 2px #ffffff55, 0 6px 10px rgba(0,0,0,0.5);
+    border: 2px solid var(--gold);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
   }
-  .table-card.filled .card-face-value { font-size: 2.4rem; }
+  .table-card.filled .card-face-value { font-size: 2.2rem; }
+  .table-card.filled .card-face-emblem .icon-svg { width: 34px; height: 34px; }
   .table-card.empty {
-    background: rgba(0,0,0,0.2);
-    border: 3px dashed var(--muted);
+    background: rgba(0,0,0,0.18);
+    border: 1px dashed var(--muted);
   }
   .table-card.empty .card-face-value {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     color: var(--muted);
-    font-family: 'IM Fell English', serif;
     font-weight: 400;
     letter-spacing: 0.5px;
   }
-
-  .table-card.pile-flash {
-    animation: pileFlash 0.55s ease;
-  }
+  .table-card.pile-flash { animation: pileFlash 0.5s ease; }
   @keyframes pileFlash {
-    0% { transform: scale(1.25) rotate(-3deg); box-shadow: 0 0 26px 8px rgba(232,201,106,0.85); }
-    100% { transform: scale(1) rotate(0deg); }
+    0% { transform: scale(1.18); box-shadow: 0 0 20px 6px rgba(220,180,94,0.7); }
+    100% { transform: scale(1); }
   }
-  .table-card.mistake-flash {
-    animation: mistakeFlash 0.6s ease;
-  }
+  .table-card.mistake-flash { animation: mistakeFlash 0.55s ease; }
   @keyframes mistakeFlash {
     0%, 100% { border-color: var(--gold); }
-    20%, 60% { border-color: var(--blood-light); transform: translateX(-6px); box-shadow: 0 0 26px 6px rgba(122,31,31,0.7); }
-    40%, 80% { transform: translateX(6px); }
+    20%, 60% { border-color: var(--blood-light); transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
   }
 
   .hand-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; text-align: center; }
-  /* Le carte in mano a ventaglio, come le si terrebbe davvero al tavolo:
-     leggermente sovrapposte, ruotate verso i lati e con quelle esterne un
-     filo più basse di quella centrale. */
   .hand-grid {
     display: flex;
     align-items: flex-end;
@@ -386,27 +344,27 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     overflow-y: visible;
-    padding: 26px 24px 6px;
-    min-height: 148px;
+    padding: 24px 22px 6px;
+    min-height: 140px;
     -webkit-overflow-scrolling: touch;
   }
   .card-btn {
     position: relative;
     flex: 0 0 auto;
-    width: 62px;
+    width: 60px;
     aspect-ratio: 3/4;
-    border-radius: 8px;
+    border-radius: 7px;
     background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
     color: var(--ink);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid var(--gold);
+    border: 2px solid var(--gold);
     padding: 0;
     touch-action: none;
     user-select: none;
-    box-shadow: inset 0 0 0 2px #ffffff55, 0 4px 6px rgba(0,0,0,0.45);
-    margin-left: -24px;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+    margin-left: -22px;
     transform-origin: bottom center;
     transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px));
     transition: transform 0.15s;
@@ -415,39 +373,26 @@
   .card-btn.dragging {
     opacity: 0.85;
     z-index: 999 !important;
-    transform: scale(1.1) rotate(-4deg) translateY(-16px);
-    box-shadow: 0 8px 14px rgba(0,0,0,0.6);
+    transform: scale(1.08) rotate(-4deg) translateY(-14px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.55);
   }
   .card-btn-blocked {
-    background: var(--tex-leather), linear-gradient(160deg, #5a2d2d, #3f1f1f);
+    background: var(--tex-leather), linear-gradient(160deg, #4c2626, #331a1a);
     color: var(--blood-light);
-    border-color: var(--blood);
+    border-color: var(--blood-light);
   }
 
-  /* ---- Faccia della carta "stile medievale": bordo interno sottile,
-     numero grande al centro, indici agli angoli come una carta vera,
-     stemma decorativo semi-trasparente dietro il numero. ---- */
-  .card-btn::before,
-  .table-card.filled::before {
-    content: '';
-    position: absolute;
-    inset: 5px;
-    border: 1.5px solid var(--gold);
-    border-radius: 5px;
-    pointer-events: none;
-  }
-  .card-btn-blocked::before { border-color: var(--blood-light); }
   .card-face-corner {
     position: absolute;
     font-family: 'Cinzel', serif;
-    font-weight: 800;
-    font-size: 0.62rem;
+    font-weight: 700;
+    font-size: 0.6rem;
     line-height: 1;
     pointer-events: none;
   }
   .card-face-corner.tl { top: 6px; left: 7px; }
   .card-face-corner.br { bottom: 6px; right: 7px; transform: rotate(180deg); }
-  .table-card .card-face-corner { font-size: 0.8rem; }
+  .table-card .card-face-corner { font-size: 0.78rem; }
   .table-card .card-face-corner.tl { top: 8px; left: 9px; }
   .table-card .card-face-corner.br { bottom: 8px; right: 9px; }
   .card-face-emblem {
@@ -456,18 +401,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.7rem;
-    opacity: 0.16;
+    opacity: 0.14;
     pointer-events: none;
+    color: var(--ink);
   }
-  .card-btn-blocked .card-face-emblem { opacity: 0.35; }
-  .table-card .card-face-emblem { font-size: 2.6rem; }
+  .card-face-emblem .icon-svg { width: 22px; height: 22px; }
+  .card-btn-blocked .card-face-emblem { opacity: 0.4; color: var(--blood-light); }
   .card-face-value {
     position: relative;
     z-index: 1;
     font-family: 'Cinzel', serif;
-    font-size: 1.35rem;
-    font-weight: 800;
+    font-size: 1.3rem;
+    font-weight: 700;
   }
 
   .log-box {
@@ -483,25 +428,19 @@
   }
   .log-box div { padding: 2px 0; }
 
-  .result-title { text-align: center; font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 800; text-shadow: 0 2px 2px rgba(0,0,0,0.5); }
-  .result-title.win {
-    color: var(--gold-light);
-    animation: glowGold 1.6s ease-in-out infinite alternate;
+  .result-title {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
   }
-  .result-title.lose {
-    color: var(--blood-light);
-    animation: shakeLose 0.5s ease;
-  }
-  @keyframes glowGold {
-    from { text-shadow: 0 2px 2px rgba(0,0,0,0.5), 0 0 8px rgba(232,201,106,0.25); }
-    to   { text-shadow: 0 2px 2px rgba(0,0,0,0.5), 0 0 26px rgba(232,201,106,0.9); }
-  }
-  @keyframes shakeLose {
-    10%, 90% { transform: translateX(-2px); }
-    20%, 80% { transform: translateX(4px); }
-    30%, 50%, 70% { transform: translateX(-8px); }
-    40%, 60% { transform: translateX(8px); }
-  }
+  .result-title.win { color: var(--gold-light); }
+  .result-title.lose { color: var(--blood-light); }
+  .result-title .icon-svg { width: 28px; height: 28px; }
 
   .hint {
     font-size: 0.85rem;
@@ -514,18 +453,18 @@
 </style>
 </head>
 <body>
-<header>🏰 Cento Carte del Regno</header>
+<header>Cento Carte del Regno</header>
 <main>
 
   <!-- SCREEN: Home (solo scelta iniziale, niente nome qui) -->
   <div class="screen active" id="screen-home">
     <div class="choice-grid">
       <button class="choice-btn primary" id="btn-choice-create">
-        <span class="icon">🏰</span>
+        <span class="icon-svg" id="icon-create"></span>
         <span>Fonda una nuova lobby</span>
       </button>
       <button class="choice-btn" id="btn-choice-join">
-        <span class="icon">🗝️</span>
+        <span class="icon-svg" id="icon-join"></span>
         <span>Entra in una lobby</span>
       </button>
     </div>
@@ -568,7 +507,7 @@
     </div>
     <div class="card-panel" id="lobby-record-panel" style="display:none; text-align:center">
       <label>Miglior livello di questa sessione</label>
-      <div class="lobby-code" id="lobby-record" style="font-size:1.8rem">Livello -</div>
+      <div class="lobby-code" id="lobby-record" style="font-size:1.7rem">Livello -</div>
     </div>
     <div class="card-panel">
       <label>Giocatori in lobby</label>
@@ -583,13 +522,10 @@
   <div class="screen" id="screen-game">
     <div class="top-row">
       <div class="level-chip" id="level-chip">Livello 1</div>
-      <div class="lives-row" id="lives-row">❤️❤️❤️</div>
+      <div class="lives-row" id="lives-row"></div>
     </div>
 
     <div class="tavern">
-      <span class="deco" style="left:4%; bottom:8%;">🍺</span>
-      <span class="deco" style="right:4%; bottom:8%;">🍺</span>
-      <span class="deco" style="left:50%; bottom:3%; transform: translateX(-50%);">🪙</span>
       <div class="seats-ring" id="seats-ring"></div>
       <div class="table-wrap">
         <div class="table-surface">
@@ -611,7 +547,7 @@
   <!-- SCREEN: Result -->
   <div class="screen" id="screen-result">
     <div class="card-panel" style="text-align:center">
-      <div class="result-title" id="result-title">-</div>
+      <div class="result-title" id="result-title"></div>
       <p id="result-sub" class="hint" style="margin-top:10px"></p>
     </div>
     <div class="log-box" id="result-log" style="display:none"></div>
@@ -629,19 +565,33 @@
   let myId = null;
   let isHost = false;
 
-  // Simbolo con cui rappresentare ogni giocatore seduto al tavolo,
-  // assegnato in base alla sua posizione nell'elenco (stabile per tutti i
-  // client, dato che l'ordine arriva identico dal server).
-  const AVATAR_ICONS = ['🧙‍♂️', '🛡️', '🏹', '👑', '⚔️', '🎭', '🧝‍♀️', '🧑‍🌾'];
+  // ---- Icone SVG condivise (linea sottile, currentColor) -----------------
+  // Sostituiscono le emoji: renderizzano identiche su ogni telefono e
+  // restano coerenti con la palette del gioco invece di stonare.
+  const ICONS = {
+    castle: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21V10l3-2v3l3-3v3l3-3v3l3-3v3l3-2v11H3Z" stroke-linejoin="round"/><path d="M7 21v-5h4v5" /></svg>',
+    key: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="4"/><path d="M11 11l9 9M17 15l3 3M15 17l2.5 2.5" stroke-linecap="round"/></svg>',
+    heart: '<svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.2 2.3 4.5 6 4.5c2 0 3.4 1.1 4 2.4.6-1.3 2-2.4 4-2.4 3.7 0 5.6 3.7 4 7.2C19.5 16.4 12 21 12 21Z"/></svg>',
+    gem: '<svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 3 9l9 13 9-13-9-7Zm0 3.2L18 9h-4.5L12 5.2ZM10.5 9H6l6-4.5V9Zm-2.2 2h4.4L12 18.3 8.3 11Zm7.4 0h4.5L14.2 18l1.5-7ZM9.8 9l1.7-3.3L12.3 9H9.8Z"/></svg>',
+    warning: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>',
+    crown: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 8l4 4 5-7 5 7 4-4-2 10H5L3 8Z"/><path d="M5 21h14" stroke-linecap="round"/></svg>',
+    trophy: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5a3 3 0 0 0 3 4M16 5h3a3 3 0 0 1-3 4"/><path d="M12 12v3M9 21h6M9.5 18h5l.5 3H9l.5-3Z"/></svg>',
+  };
+  function icon(name) { return ICONS[name] || ''; }
+  document.getElementById('icon-create').innerHTML = icon('castle');
+  document.getElementById('icon-join').innerHTML = icon('key');
+
+  // Palette per gli avatar (iniziali in cerchio): colori diversi in base
+  // alla posizione del giocatore nell'elenco, stabile per tutti i client.
+  const AVATAR_COLORS = ['#dcb45e', '#c96b6b', '#8fae7a', '#9cb8d9', '#d99f6b', '#b89cd9'];
 
   // Markup della "faccia" di una carta stile medievale: indici agli angoli,
-  // stemma decorativo semi-trasparente, numero grande al centro. Usato sia
-  // per le carte in mano sia per la carta al centro del tavolo.
+  // piccolo stemma decorativo dietro il numero (⚠ diventa un'icona quando
+  // la carta sarebbe comunque un errore certo).
   function cardFaceHTML(value, warn) {
-    const emblem = warn ? '⚠️' : '⚜️';
     return `
       <span class="card-face-corner tl">${value}</span>
-      <span class="card-face-emblem">${emblem}</span>
+      <span class="card-face-emblem">${icon(warn ? 'warning' : 'gem')}</span>
       <span class="card-face-value">${value}</span>
       <span class="card-face-corner br">${value}</span>
     `;
@@ -820,7 +770,7 @@
     state.players.forEach((p) => {
       const row = document.createElement('div');
       row.className = 'player-row' + (p.connected ? '' : ' offline');
-      row.innerHTML = `<span><span class="dot"></span>${escapeHtml(p.name)}${p.id === state.hostId ? ' 👑' : ''}</span><span>${p.connected ? 'connesso' : 'offline'}</span>`;
+      row.innerHTML = `<span><span class="dot"></span>${escapeHtml(p.name)}${p.id === state.hostId ? ' (host)' : ''}</span><span>${p.connected ? 'connesso' : 'offline'}</span>`;
       list.appendChild(row);
     });
     const startBtn = document.getElementById('btn-start');
@@ -835,9 +785,9 @@
     }
   }
 
-  // Dispone gli avatar degli ALTRI giocatori lungo un piccolo arco sopra il
-  // tavolo, come se fossero seduti di fronte a noi: si vedono solo loro,
-  // mai il proprio avatar (siamo "dietro" la fotocamera, al nostro posto).
+  // Dispone gli avatar degli ALTRI giocatori (iniziali in un cerchio
+  // colorato) lungo un piccolo arco sopra il tavolo, come se fossero
+  // seduti di fronte a noi: si vedono solo loro, mai il proprio avatar.
   function renderSeats(state) {
     const ring = document.getElementById('seats-ring');
     ring.innerHTML = '';
@@ -846,17 +796,18 @@
     others.forEach((p, i) => {
       const t = n === 1 ? 0.5 : i / (n - 1);
       const leftPct = 8 + t * 84;
-      const arcLift = Math.sin(t * Math.PI) * 12; // px, arco leggero
+      const arcLift = Math.sin(t * Math.PI) * 12;
       const globalIdx = state.players.findIndex((pl) => pl.id === p.id);
-      const icon = AVATAR_ICONS[globalIdx % AVATAR_ICONS.length];
+      const color = AVATAR_COLORS[globalIdx % AVATAR_COLORS.length];
+      const initials = (p.name || '?').trim().slice(0, 2).toUpperCase();
       const div = document.createElement('div');
       div.className = 'seat-avatar' + (p.connected ? '' : ' offline');
       div.style.left = leftPct + '%';
       div.style.top = (30 - arcLift) + 'px';
       div.innerHTML = `
-        <div class="figure">${icon}</div>
+        <div class="figure" style="background:${color}">${escapeHtml(initials)}</div>
         <div class="seat-name">${escapeHtml(p.name)}</div>
-        <div class="seat-count">🃏 ${p.handCount}</div>
+        <div class="seat-count">${p.handCount} cart${p.handCount === 1 ? 'a' : 'e'}</div>
       `;
       ring.appendChild(div);
     });
@@ -864,18 +815,11 @@
 
   function renderGame(state) {
     document.getElementById('level-chip').textContent = `Livello ${state.level} di ${state.maxLevel}`;
-    document.getElementById('lives-row').textContent = '❤️'.repeat(Math.max(0, state.lives));
+    document.getElementById('lives-row').innerHTML = icon('heart').repeat(Math.max(0, state.lives));
 
     const tableCard = document.getElementById('table-card');
     const mistakeHappened = prevLives != null && state.lives < prevLives;
     const cardPlayed = prevPlayedCount != null && state.playedCount > prevPlayedCount;
-    tableCard.classList.remove('pile-flash', 'mistake-flash');
-    void tableCard.offsetWidth; // forza il reflow per poter far ripartire l'animazione
-    if (mistakeHappened) {
-      tableCard.classList.add('mistake-flash');
-    } else if (cardPlayed) {
-      tableCard.classList.add('pile-flash');
-    }
     prevLives = state.lives;
     prevPlayedCount = state.playedCount;
 
@@ -884,9 +828,9 @@
       tableCard.innerHTML = cardFaceHTML(state.pileTop, false);
     } else {
       tableCard.className = 'table-card empty';
-      tableCard.innerHTML = '<span class="card-face-value">Tavolo<br>vuoto</span>';
+      tableCard.innerHTML = '<span class="card-face-value">Vuoto</span>';
     }
-    // riapplichiamo l'eventuale animazione dopo aver rigenerato la classe
+    void tableCard.offsetWidth; // forza il reflow per poter far ripartire l'animazione
     if (mistakeHappened) tableCard.classList.add('mistake-flash');
     else if (cardPlayed) tableCard.classList.add('pile-flash');
 
@@ -900,16 +844,13 @@
     if (me && me.hand) {
       syncHandOrder(me.hand);
       const n = myHandOrder.length;
-      const maxSpread = Math.min(46, 7 * n); // gradi totali del ventaglio, più stretto con poche carte
+      const maxSpread = Math.min(46, 7 * n);
       myHandOrder.forEach((card, i) => {
         const isRisky = card <= state.pileTop; // giocarla ora sarebbe comunque un errore certo
         const btn = document.createElement('button');
         btn.className = 'card-btn' + (isRisky ? ' card-btn-blocked' : '');
         btn.innerHTML = cardFaceHTML(card, isRisky);
         btn.dataset.card = card;
-        // Ventaglio: le carte esterne ruotano di più e scendono un filo,
-        // quella centrale resta dritta e più in alto, come tenendole in
-        // mano davvero.
         const t = n === 1 ? 0.5 : i / (n - 1);
         const angle = (t - 0.5) * maxSpread;
         const lift = Math.abs(t - 0.5) * 2 * 16;
@@ -956,7 +897,7 @@
     }
 
     if (state.status === 'level_complete') {
-      title.textContent = `🏆 Livello ${state.level} superato!`;
+      title.innerHTML = `${icon('trophy')}<span>Livello ${state.level} superato</span>`;
       title.className = 'result-title win';
       sub.textContent = `${state.lives} vit${state.lives === 1 ? 'a' : 'e'} rimaste. Pronti per il Livello ${state.level + 1} (${state.level + 1} carte a testa)?`;
       if (amHost) {
@@ -967,7 +908,7 @@
         waitMsg.style.display = 'block';
       }
     } else if (state.status === 'won') {
-      title.textContent = '👑 Sincronia perfetta!';
+      title.innerHTML = `${icon('crown')}<span>Sincronia perfetta</span>`;
       title.className = 'result-title win';
       sub.textContent = `Avete superato ogni livello fino al Livello ${state.maxLevel}: gloria eterna alla vostra squadra!`;
       if (amHost) {
@@ -977,7 +918,7 @@
         waitMsg.style.display = 'block';
       }
     } else {
-      title.textContent = '💀 Game Over';
+      title.innerHTML = `<span>Game Over</span>`;
       title.className = 'result-title lose';
       sub.textContent = `La partita si è conclusa al Livello ${state.level}. Miglior livello di questa sessione: ${state.bestLevel ?? '-'}.`;
       if (amHost) {

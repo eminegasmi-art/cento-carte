@@ -21,11 +21,8 @@
     --blood-light: #d97b7b;
     --text: #e9dfc7;
     --muted: #9c8d6f;
-    /* Stile "card crawler": sfondo scuro e pulito, poche texture, contorni
-       netti scuri sulle carte invece di bordi dorati sottili. */
     --bg-1: #14100c;
     --bg-2: #1f1712;
-    --tex-stone: url('https://www.transparenttextures.com/patterns/old-wall.png');
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -39,16 +36,31 @@
     background: radial-gradient(ellipse 80% 50% at 50% 0%, var(--bg-2), var(--bg-1) 70%);
   }
   header {
-    padding: 16px;
-    text-align: center;
+    position: relative;
+    padding: 10px 16px;
+    background: var(--bg-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  header img.logo-banner-img {
+    display: block;
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+  }
+  header .logo-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: 'Cinzel', serif;
     font-weight: 700;
-    font-size: 1.2rem;
-    letter-spacing: 1px;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
     color: var(--gold-light);
-    border-bottom: 2px solid var(--ink);
-    background: var(--bg-1);
-    box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+    text-shadow: 0 2px 3px rgba(0,0,0,0.85);
   }
   main {
     flex: 1;
@@ -235,17 +247,17 @@
   .tavern {
     position: relative;
     width: 100%;
+    min-height: 320px;
     border-radius: 14px;
     overflow: hidden;
     border: 2px solid var(--ink);
     padding: 38px 10px 20px;
     background-image:
-      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,175,90,0.18), transparent 60%),
-      var(--tex-stone),
-      linear-gradient(180deg, #241a11 0%, #150f0a 60%, #0d0906 100%);
-    background-repeat: no-repeat, repeat, no-repeat;
-    background-position: center, center, center;
-    background-size: cover, auto, cover;
+      linear-gradient(180deg, rgba(10,6,3,0.25) 0%, rgba(10,6,3,0.55) 55%, rgba(8,5,2,0.8) 100%),
+      url('assets/bg-tavern.jpg');
+    background-repeat: no-repeat, no-repeat;
+    background-position: center, center 20%;
+    background-size: cover, cover;
   }
 
   .seats-ring { position: relative; height: 64px; }
@@ -259,18 +271,14 @@
     width: 56px;
   }
   .seat-avatar .figure {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--ink);
-    border: 2px solid var(--ink);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    display: block;
+    object-fit: cover;
+    border: 2px solid var(--gold);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+    background: var(--wood-dark);
   }
   .seat-avatar .seat-name {
     font-size: 0.6rem;
@@ -289,50 +297,35 @@
   .seat-avatar.offline .figure { opacity: 0.35; filter: grayscale(1); }
 
   .table-wrap { display: flex; flex-direction: column; align-items: center; }
-  .table-surface {
-    text-align: center;
-    width: 80%;
-    max-width: 270px;
-    aspect-ratio: 3 / 2;
-    border-radius: 50%;
-    background:
-      radial-gradient(ellipse at center, rgba(0,0,0,0.15), transparent 70%),
-      linear-gradient(160deg, var(--wood-light), var(--wood-mid));
-    border: 3px solid var(--ink);
-    box-shadow: 0 6px 0 rgba(0,0,0,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .table-caption {
+    margin-top: 10px; font-size: 0.76rem; color: var(--text); padding: 3px 12px;
+    background: rgba(0,0,0,0.5); border-radius: 999px;
   }
-  .table-caption { margin-top: 8px; font-size: 0.76rem; color: var(--muted); padding: 0 10px; }
 
-  /* La carta al centro del tavolo: rappresenta l'ultima carta piazzata. */
+  /* La carta al centro del tavolo: rappresenta l'ultima carta piazzata,
+     con la cornice illustrata vera al posto di un riquadro CSS. */
   .table-card {
     position: relative;
-    width: 88px;
+    width: 108px;
     aspect-ratio: 3 / 4;
-    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 6px 6px rgba(0,0,0,0.6));
+    transition: transform 0.15s;
   }
   .table-card.filled {
-    background: linear-gradient(160deg, var(--parchment), var(--parchment-2));
-    border: 3px solid var(--ink);
-    box-shadow: 0 4px 0 rgba(0,0,0,0.4);
+    background-image: url('assets/card-frame-gold.png');
   }
-  .table-card.filled .card-face-value { font-size: 2.2rem; }
-  .table-card.filled .card-face-emblem .icon-svg { width: 34px; height: 34px; }
+  .table-card.filled .card-face-value { font-size: 2.1rem; }
+  .table-card.filled .card-face-emblem .icon-svg { width: 30px; height: 30px; }
   .table-card.empty {
-    background: rgba(0,0,0,0.18);
-    border: 1px dashed var(--muted);
+    background-image: url('assets/card-back.png');
   }
   .table-card.empty .card-face-value {
-    font-size: 0.78rem;
-    color: var(--muted);
-    font-weight: 400;
-    letter-spacing: 0.5px;
+    display: none;
   }
   .table-card.pile-flash { animation: pileFlash 0.5s ease; }
   @keyframes pileFlash {
@@ -361,35 +354,35 @@
   .card-btn {
     position: relative;
     flex: 0 0 auto;
-    width: 60px;
+    width: 66px;
     aspect-ratio: 3/4;
-    border-radius: 7px;
-    background: linear-gradient(160deg, var(--parchment), var(--parchment-2));
+    background-image: url('assets/card-frame-gold.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
     color: var(--ink);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2.5px solid var(--ink);
+    border: none;
     padding: 0;
     touch-action: none;
     user-select: none;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.4);
-    margin-left: -22px;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,0.5));
+    margin-left: -24px;
     transform-origin: bottom center;
     transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px));
     transition: transform 0.15s;
   }
   .card-btn:first-child { margin-left: 0; }
   .card-btn.dragging {
-    opacity: 0.85;
+    opacity: 0.9;
     z-index: 999 !important;
-    transform: scale(1.08) rotate(-4deg) translateY(-14px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.55);
+    transform: scale(1.1) rotate(-4deg) translateY(-16px);
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.6));
   }
   .card-btn-blocked {
-    background: linear-gradient(160deg, #5a3232, #3f2222);
+    background-image: url('assets/card-frame-blocked.png');
     color: var(--blood-light);
-    border-color: #2a1414;
   }
 
   .card-face-corner {
@@ -400,11 +393,11 @@
     line-height: 1;
     pointer-events: none;
   }
-  .card-face-corner.tl { top: 6px; left: 7px; }
-  .card-face-corner.br { bottom: 6px; right: 7px; transform: rotate(180deg); }
-  .table-card .card-face-corner { font-size: 0.78rem; }
-  .table-card .card-face-corner.tl { top: 8px; left: 9px; }
-  .table-card .card-face-corner.br { bottom: 8px; right: 9px; }
+  .card-face-corner.tl { top: 13px; left: 14px; }
+  .card-face-corner.br { bottom: 13px; right: 14px; transform: rotate(180deg); }
+  .table-card .card-face-corner { font-size: 0.8rem; }
+  .table-card .card-face-corner.tl { top: 20px; left: 22px; }
+  .table-card .card-face-corner.br { bottom: 20px; right: 22px; }
   .card-face-emblem {
     position: absolute;
     inset: 0;
@@ -463,7 +456,10 @@
 </style>
 </head>
 <body>
-<header>Cento Carte del Regno</header>
+<header>
+  <img class="logo-banner-img" src="assets/logo-banner.png" alt="" />
+  <span class="logo-text">Cento Carte del Regno</span>
+</header>
 <main>
 
   <!-- SCREEN: Home (solo scelta iniziale, niente nome qui) -->
@@ -538,9 +534,7 @@
     <div class="tavern">
       <div class="seats-ring" id="seats-ring"></div>
       <div class="table-wrap">
-        <div class="table-surface">
-          <div class="table-card empty" id="table-card"></div>
-        </div>
+        <div class="table-card empty" id="table-card"></div>
         <div class="table-caption" id="table-caption">0 carte giocate su 2</div>
       </div>
     </div>
@@ -591,9 +585,9 @@
   document.getElementById('icon-create').innerHTML = icon('castle');
   document.getElementById('icon-join').innerHTML = icon('key');
 
-  // Palette per gli avatar (iniziali in cerchio): colori diversi in base
-  // alla posizione del giocatore nell'elenco, stabile per tutti i client.
-  const AVATAR_COLORS = ['#dcb45e', '#c96b6b', '#8fae7a', '#9cb8d9', '#d99f6b', '#b89cd9'];
+  // Ritratti per gli avatar: uno in base alla posizione del giocatore
+  // nell'elenco, stabile per tutti i client (stesso ordine per tutti).
+  const AVATAR_IMAGES = Array.from({ length: 9 }, (_, i) => `assets/avatar-${i + 1}.png`);
 
   // Markup della "faccia" di una carta stile medievale: indici agli angoli,
   // piccolo stemma decorativo dietro il numero (⚠ diventa un'icona quando
@@ -808,14 +802,13 @@
       const leftPct = 8 + t * 84;
       const arcLift = Math.sin(t * Math.PI) * 12;
       const globalIdx = state.players.findIndex((pl) => pl.id === p.id);
-      const color = AVATAR_COLORS[globalIdx % AVATAR_COLORS.length];
-      const initials = (p.name || '?').trim().slice(0, 2).toUpperCase();
+      const avatarSrc = AVATAR_IMAGES[globalIdx % AVATAR_IMAGES.length];
       const div = document.createElement('div');
       div.className = 'seat-avatar' + (p.connected ? '' : ' offline');
       div.style.left = leftPct + '%';
       div.style.top = (30 - arcLift) + 'px';
       div.innerHTML = `
-        <div class="figure" style="background:${color}">${escapeHtml(initials)}</div>
+        <img class="figure" src="${avatarSrc}" alt="" />
         <div class="seat-name">${escapeHtml(p.name)}</div>
         <div class="seat-count">${p.handCount} cart${p.handCount === 1 ? 'a' : 'e'}</div>
       `;

@@ -19,8 +19,17 @@
     --gold-light: #e8c96a;
     --blood: #7a1f1f;
     --blood-light: #d97a7a;
+    --green: #4a7a3a;
+    --green-light: #8fd97a;
     --text: #f0e6d2;
     --muted: #b8a67e;
+    /* Texture vere (PNG tileable trasparenti). Se l'immagine non si carica
+       (rete assente/bloccata) il layer resta semplicemente trasparente e
+       sotto rimane visibile il gradiente CSS già presente: fallback
+       automatico, nessun JS necessario. */
+    --tex-wood: url('https://www.transparenttextures.com/patterns/dark-wood.png');
+    --tex-parchment: url('https://www.transparenttextures.com/patterns/old-mathematics.png');
+    --tex-leather: url('https://www.transparenttextures.com/patterns/leather.png');
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -32,6 +41,7 @@
     flex-direction: column;
     min-height: 100vh;
     background:
+      var(--tex-wood),
       repeating-linear-gradient(90deg, rgba(0,0,0,0.10) 0px, rgba(0,0,0,0.10) 1px, transparent 2px, transparent 5px),
       repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, transparent 2px, transparent 40px),
       linear-gradient(180deg, #402715, #1c1006);
@@ -46,6 +56,8 @@
     color: var(--gold-light);
     border-bottom: 3px double var(--gold);
     text-shadow: 0 2px 2px rgba(0,0,0,0.6);
+    background: var(--tex-leather), linear-gradient(180deg, #2a1808, #140b03);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
   }
   main {
     flex: 1;
@@ -62,7 +74,7 @@
   .screen.active { display: flex; }
 
   .card-panel {
-    background: linear-gradient(160deg, var(--wood-light), var(--wood-mid));
+    background: var(--tex-wood), linear-gradient(160deg, var(--wood-light), var(--wood-mid));
     border: 2px solid var(--gold);
     border-radius: 8px;
     padding: 18px;
@@ -101,7 +113,7 @@
     box-shadow: 0 3px 0 #5e4a12;
   }
   .btn-secondary {
-    background: linear-gradient(180deg, var(--wood-light), var(--wood-mid));
+    background: var(--tex-wood), linear-gradient(180deg, var(--wood-light), var(--wood-mid));
     color: var(--text);
     border: 2px solid var(--gold);
   }
@@ -141,7 +153,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--wood-mid);
+    background: var(--tex-wood), var(--wood-mid);
     border: 1px solid var(--gold);
     padding: 10px 14px;
     border-radius: 6px;
@@ -149,51 +161,109 @@
   .player-row .dot { width: 8px; height: 8px; border-radius: 50%; background: #7ec96a; display: inline-block; margin-right: 8px; }
   .player-row.offline .dot { background: var(--muted); }
 
-  .round-badge {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+  /* ---- Indicatore di turno: molto visibile, cambia colore in base a chi tocca ---- */
+  .turn-banner {
+    text-align: center;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    border: 3px solid var(--gold);
+    text-shadow: 0 2px 2px rgba(0,0,0,0.5);
   }
-  .round-chip {
+  .turn-banner.mine {
+    background: linear-gradient(180deg, var(--green-light), var(--green));
+    color: #10230a;
+    animation: pulse-turn 1.6s ease-in-out infinite;
+  }
+  .turn-banner.other {
+    background: linear-gradient(180deg, var(--wood-light), var(--wood-mid));
+    color: var(--gold-light);
+  }
+  @keyframes pulse-turn {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(143, 217, 122, 0.5); }
+    50% { box-shadow: 0 0 0 10px rgba(143, 217, 122, 0); }
+  }
+
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  .deck-chip {
+    background: var(--tex-wood), linear-gradient(180deg, var(--wood-light), var(--wood-mid));
+    border: 2px solid var(--gold);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--gold-light);
+    white-space: nowrap;
+  }
+  .min-chip {
     background: linear-gradient(180deg, var(--gold-light), var(--gold));
     color: var(--ink);
     border: 2px solid #8a6b14;
     border-radius: 999px;
-    padding: 6px 16px;
+    padding: 8px 16px;
     font-family: 'Cinzel', serif;
     font-weight: 700;
     font-size: 0.85rem;
-  }
-  .round-chip.record {
-    background: linear-gradient(180deg, var(--wood-light), var(--wood-mid));
-    color: var(--gold-light);
-    border-color: var(--gold);
+    white-space: nowrap;
   }
 
+  /* ---- 4 pile in griglia 2x2 ---- */
+  .piles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
   .pile-area {
     text-align: center;
     background:
+      var(--tex-wood),
       radial-gradient(ellipse at center, rgba(0,0,0,0.15), transparent 70%),
       linear-gradient(160deg, var(--wood-light), var(--wood-mid));
     border: 3px double var(--gold);
-    border-radius: 14px;
-    padding: 26px 18px;
+    border-radius: 12px;
+    padding: 14px 8px;
+    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
   }
-  .pile-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'Cinzel', serif; }
+  .pile-area.valid-target {
+    border-color: var(--green-light);
+    box-shadow: 0 0 0 3px rgba(143, 217, 122, 0.55);
+    cursor: pointer;
+  }
+  /* Piccola "fiammata" dorata quando una carta viene appena piazzata su
+     questa pila: rende tangibile la giocata senza bisogno di animare le
+     singole carte. */
+  .pile-area.pile-flash {
+    animation: pileFlash 0.55s ease;
+  }
+  @keyframes pileFlash {
+    0% { transform: scale(1.14); box-shadow: 0 0 26px 8px rgba(232,201,106,0.85); border-color: var(--gold-light); }
+    100% { transform: scale(1); box-shadow: none; }
+  }
+  .pile-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'Cinzel', serif; }
   .pile-number {
     font-family: 'Cinzel', serif;
-    font-size: 4rem;
+    font-size: 2.3rem;
     font-weight: 800;
     color: var(--gold-light);
-    line-height: 1.1;
+    line-height: 1.15;
     text-shadow: 0 2px 3px rgba(0,0,0,0.5);
   }
-  .pile-sub { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .pile-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
 
   .others-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
   .other-chip {
-    background: var(--wood-mid);
+    background: var(--tex-wood), var(--wood-mid);
     border: 1px solid var(--gold);
     padding: 8px 12px;
     border-radius: 999px;
@@ -202,20 +272,21 @@
     align-items: center;
     gap: 6px;
   }
+  .other-chip.active-turn { border-color: var(--green-light); box-shadow: 0 0 0 2px rgba(143,217,122,0.4); }
 
   .hand-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; text-align: center; }
   .hand-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
     gap: 10px;
   }
   .card-btn {
     aspect-ratio: 3/4;
     border-radius: 8px;
-    background: linear-gradient(160deg, var(--parchment), var(--parchment-2));
+    background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
     color: var(--ink);
     font-family: 'Cinzel', serif;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 800;
     display: flex;
     align-items: center;
@@ -225,34 +296,58 @@
     touch-action: none;
     user-select: none;
     box-shadow: inset 0 0 0 2px #ffffff55, 0 3px 4px rgba(0,0,0,0.35);
+    transition: transform 0.12s;
+  }
+  .card-btn.selected {
+    border-color: var(--green-light);
+    transform: translateY(-8px);
+    box-shadow: 0 0 0 3px rgba(143, 217, 122, 0.6), 0 6px 8px rgba(0,0,0,0.4);
   }
   .card-btn.dragging {
     opacity: 0.7;
     transform: scale(1.06) rotate(-2deg);
   }
-  .card-btn-blocked {
-    background: linear-gradient(160deg, #5a2d2d, #3f1f1f);
+  .card-btn-unplayable {
+    background: var(--tex-leather), linear-gradient(160deg, #5a2d2d, #3f1f1f);
     color: var(--blood-light);
     border-color: var(--blood);
-    font-size: 1.05rem;
   }
 
+  .end-turn-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .end-turn-hint { font-size: 0.78rem; color: var(--muted); text-align: center; }
+
   .log-box {
-    background: var(--wood-mid);
+    background: var(--tex-wood), var(--wood-mid);
     border: 1px solid var(--gold);
     border-radius: 6px;
     padding: 12px 14px;
     font-size: 0.82rem;
     color: var(--muted);
-    max-height: 120px;
+    max-height: 110px;
     overflow-y: auto;
     width: 100%;
   }
   .log-box div { padding: 2px 0; }
 
   .result-title { text-align: center; font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 800; text-shadow: 0 2px 2px rgba(0,0,0,0.5); }
-  .result-title.win { color: var(--gold-light); }
-  .result-title.lose { color: var(--blood-light); }
+  .result-title.win {
+    color: var(--gold-light);
+    animation: glowGold 1.6s ease-in-out infinite alternate;
+  }
+  .result-title.lose {
+    color: var(--blood-light);
+    animation: shakeLose 0.5s ease;
+  }
+  @keyframes glowGold {
+    from { text-shadow: 0 2px 2px rgba(0,0,0,0.5), 0 0 8px rgba(232,201,106,0.25); }
+    to   { text-shadow: 0 2px 2px rgba(0,0,0,0.5), 0 0 26px rgba(232,201,106,0.9); }
+  }
+  @keyframes shakeLose {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-8px); }
+    40%, 60% { transform: translateX(8px); }
+  }
 
   .hint {
     font-size: 0.85rem;
@@ -285,7 +380,7 @@
     </div>
     <div class="status-box" id="home-status"></div>
     <div class="error-box" id="home-error"></div>
-    <p class="hint">Gioco cooperativo a round crescenti: si comincia con 1 carta a testa, poi 2, poi 3... Un solo errore chiude la run per tutti. Regola d'oro: non rivelate mai a voce quali carte avete in mano!</p>
+    <p class="hint">Gioco cooperativo a turni: 4 pile (2 crescenti ⬆️, 2 decrescenti ⬇️), si può sempre giocare una carta esattamente ±10 rispetto alla cima per invertire la pila. Regola d'oro: non rivelate mai a voce quali carte avete in mano!</p>
   </div>
 
   <!-- SCREEN: Lobby -->
@@ -296,36 +391,39 @@
       <p class="hint">Condividi questo codice + il link della pagina con gli altri giocatori.</p>
     </div>
     <div class="card-panel" id="lobby-record-panel" style="display:none; text-align:center">
-      <label>Record di questa sessione</label>
-      <div class="lobby-code" id="lobby-record" style="font-size:1.6rem">Round -</div>
+      <label>Miglior risultato di questa sessione</label>
+      <div class="lobby-code" id="lobby-record" style="font-size:1.5rem">-</div>
     </div>
     <div class="card-panel">
       <label>Giocatori in lobby</label>
       <div class="players-list" id="lobby-players"></div>
     </div>
-    <button class="btn-primary" id="btn-start">Inizia la run (Round 1)</button>
+    <button class="btn-primary" id="btn-start">Inizia la partita</button>
     <p class="hint" id="lobby-wait-msg">In attesa che l'host avvii la partita...</p>
     <div class="error-box" id="lobby-error"></div>
   </div>
 
   <!-- SCREEN: Game -->
   <div class="screen" id="screen-game">
-    <div class="round-badge">
-      <div class="round-chip" id="round-chip">Round 1</div>
-      <div class="round-chip record" id="record-chip" style="display:none">Record: Round -</div>
+    <div class="turn-banner" id="turn-banner">Turno di...</div>
+
+    <div class="top-row">
+      <div class="deck-chip" id="deck-chip">Mazzo: 0</div>
+      <div class="min-chip" id="min-chip">Minimo: 2</div>
     </div>
 
-    <div class="pile-area">
-      <div class="pile-label">Ultima carta giocata</div>
-      <div class="pile-number" id="pile-top">0</div>
-      <div class="pile-sub" id="pile-sub">0 carte piazzate</div>
-    </div>
+    <div class="piles-grid" id="piles-grid"></div>
 
     <div class="others-list" id="others-list"></div>
 
     <div>
-      <div class="hand-label">La tua mano (tocca per giocare, trascina per riordinare)</div>
+      <div class="hand-label" id="hand-label">La tua mano (tocca una carta, poi tocca la pila)</div>
       <div class="hand-grid" id="hand-grid"></div>
+    </div>
+
+    <div class="end-turn-wrap">
+      <button class="btn-primary" id="btn-end-turn" disabled>Fine turno</button>
+      <div class="end-turn-hint" id="end-turn-hint"></div>
     </div>
 
     <div class="log-box" id="log-box"></div>
@@ -339,8 +437,7 @@
       <p id="result-sub" class="hint" style="margin-top:10px"></p>
     </div>
     <div class="log-box" id="result-log" style="display:none"></div>
-    <button class="btn-primary" id="btn-next-round">Prossimo round</button>
-    <button class="btn-primary" id="btn-restart">Nuova run (dal Round 1)</button>
+    <button class="btn-primary" id="btn-restart">Nuova partita</button>
     <p class="hint" id="result-wait-msg">In attesa dell'host...</p>
   </div>
 
@@ -352,6 +449,7 @@
   const socket = io();
   let myId = null;
   let isHost = false;
+  let selectedCard = null; // carta attualmente selezionata in mano (in attesa che si scelga la pila)
 
   // ---- Ordine della mano scelto dal giocatore (solo locale, non sincronizzato) ----
   let myHandOrder = [];
@@ -359,16 +457,14 @@
 
   // Le carte NON vengono ordinate dal server. Manteniamo un ordine locale
   // scelto dal giocatore: quando arriva una nuova mano (carta mai vista
-  // prima) ripartiamo dall'ordine di distribuzione; quando una carta viene
+  // prima, es. dopo la pesca) la aggiungiamo in coda; quando una carta viene
   // giocata la togliamo mantenendo l'ordine delle rimanenti.
   function syncHandOrder(serverHand) {
     const serverSet = new Set(serverHand);
-    const hasNewCard = serverHand.some((c) => !myHandOrder.includes(c));
-    if (hasNewCard) {
-      myHandOrder = [...serverHand];
-    } else {
-      myHandOrder = myHandOrder.filter((c) => serverSet.has(c));
-    }
+    myHandOrder = myHandOrder.filter((c) => serverSet.has(c));
+    serverHand.forEach((c) => {
+      if (!myHandOrder.includes(c)) myHandOrder.push(c);
+    });
   }
 
   // Trascinamento con Pointer Events (funziona sia con dito che mouse,
@@ -470,31 +566,62 @@
       if (res && !res.ok) alert(res.error || 'Errore');
     });
   });
-  document.getElementById('btn-next-round').addEventListener('click', () => {
-    socket.emit('nextRound', {}, (res) => {
-      if (res && !res.ok) alert(res.error || 'Errore');
+
+  // ---- Gioco: logica pila valida per una carta (rispecchia gameLogic.js) ----
+  function pileTopValue(pile) {
+    return pile.count > 0 ? pile.top : (pile.type === 'asc' ? 0 : 101);
+  }
+  function isValidPlayOnPile(pile, card) {
+    const top = pileTopValue(pile);
+    if (pile.type === 'asc') return card > top || card === top - 10;
+    return card < top || card === top + 10;
+  }
+  function validPileIndexes(piles, card) {
+    const out = [];
+    piles.forEach((p, i) => { if (isValidPlayOnPile(p, card)) out.push(i); });
+    return out;
+  }
+
+  // ---- Gioco: selezione carta -> selezione pila ----
+  function selectCard(card, state) {
+    const valid = validPileIndexes(state.piles, card);
+    if (!valid.length) {
+      const tops = state.piles.map((p, i) => `${p.type === 'asc' ? '⬆️' : '⬇️'} ${pileTopValue(p)}`).join('  ');
+      flashError(document.getElementById('game-error'), `Il ${card} non è giocabile su nessuna pila in questo momento. Cime attuali: ${tops}`);
+      selectedCard = null;
+    } else if (selectedCard === card) {
+      selectedCard = null; // secondo tocco sulla stessa carta: deseleziona
+    } else {
+      selectedCard = card;
+    }
+    renderGame(lastState);
+  }
+  function requestPlayCard(card, pileIndex) {
+    socket.emit('playCard', { card, pileIndex }, (res) => {
+      if (res && !res.ok) flashError(document.getElementById('game-error'), res.error || 'Errore');
+      selectedCard = null;
+    });
+  }
+  document.getElementById('btn-end-turn').addEventListener('click', () => {
+    socket.emit('endTurn', {}, (res) => {
+      if (res && !res.ok) flashError(document.getElementById('game-error'), res.error || 'Errore');
     });
   });
 
-  // ---- Gioco: giocare una carta ----
-  function requestPlayCard(card) {
-    socket.emit('playCard', { card }, (res) => {
-      if (res && !res.ok) flashError(document.getElementById('game-error'), res.error || 'Errore');
-    });
-  }
-
   // ---- Stato dal server ----
   let lastState = null;
+  let prevPileCounts = null; // per animare la pila su cui è appena arrivata una carta
   socket.on('state', (state) => {
     lastState = state;
     isHost = state.hostId === myId;
     if (state.status === 'waiting') {
+      prevPileCounts = null;
       renderLobby(state);
       showScreen('lobby');
     } else if (state.status === 'playing') {
       renderGame(state);
       showScreen('game');
-    } else if (state.status === 'round_complete' || state.status === 'campaign_complete' || state.status === 'lost') {
+    } else if (state.status === 'won' || state.status === 'lost') {
       renderResult(state);
       showScreen('result');
     }
@@ -503,9 +630,11 @@
   function renderLobby(state) {
     document.getElementById('lobby-code').textContent = state.code;
     const recordPanel = document.getElementById('lobby-record-panel');
-    if (state.bestRound > 0) {
+    if (state.bestRemaining != null) {
       recordPanel.style.display = 'block';
-      document.getElementById('lobby-record').textContent = `Round ${state.bestRound}`;
+      document.getElementById('lobby-record').textContent = state.bestRemaining === 0
+        ? '👑 Partita vinta!'
+        : `${state.bestRemaining} carte rimaste`;
     } else {
       recordPanel.style.display = 'none';
     }
@@ -530,26 +659,51 @@
   }
 
   function renderGame(state) {
-    document.getElementById('round-chip').textContent = `Round ${state.round} di ${state.maxRound}`;
-    const recordChip = document.getElementById('record-chip');
-    if (state.bestRound > 0) {
-      recordChip.style.display = 'inline-block';
-      recordChip.textContent = `Record: Round ${state.bestRound}`;
-    } else {
-      recordChip.style.display = 'none';
-    }
+    const myTurn = state.currentTurnId === myId;
+    const turnPlayer = state.players.find((p) => p.id === state.currentTurnId);
 
-    document.getElementById('pile-top').textContent = state.pileTop;
-    document.getElementById('pile-sub').textContent = `${state.pileCount} carte piazzate su ${totalCards(state)}`;
+    const banner = document.getElementById('turn-banner');
+    banner.className = 'turn-banner ' + (myTurn ? 'mine' : 'other');
+    banner.textContent = myTurn ? '⚔️ È il tuo turno!' : `Turno di ${turnPlayer ? escapeHtml(turnPlayer.name) : '...'}`;
 
+    document.getElementById('deck-chip').textContent = `Mazzo: ${state.deckCount}`;
+    document.getElementById('min-chip').textContent = `Minimo a turno: ${state.minThisTurn}`;
+
+    // ---- 4 pile ----
+    const pilesGrid = document.getElementById('piles-grid');
+    pilesGrid.innerHTML = '';
+    const validTargets = (myTurn && selectedCard != null) ? validPileIndexes(state.piles, selectedCard) : [];
+    state.piles.forEach((pile, i) => {
+      const div = document.createElement('div');
+      const justPlayed = prevPileCounts && pile.count > prevPileCounts[i];
+      div.className = 'pile-area' + (validTargets.includes(i) ? ' valid-target' : '') + (justPlayed ? ' pile-flash' : '');
+      const icon = pile.type === 'asc' ? '⬆️' : '⬇️';
+      const top = pileTopValue(pile);
+      div.innerHTML = `
+        <div class="pile-label">${icon} ${pile.type === 'asc' ? 'Crescente' : 'Decrescente'}</div>
+        <div class="pile-number">${pile.count === 0 ? (pile.type === 'asc' ? '–' : '–') : top}</div>
+        <div class="pile-sub">${pile.count} cart${pile.count === 1 ? 'a' : 'e'}</div>
+      `;
+      if (validTargets.includes(i)) {
+        div.addEventListener('click', () => requestPlayCard(selectedCard, i));
+      }
+      pilesGrid.appendChild(div);
+    });
+    prevPileCounts = state.piles.map((p) => p.count);
+
+    // ---- Altri giocatori ----
     const others = document.getElementById('others-list');
     others.innerHTML = '';
     state.players.filter((p) => p.id !== myId).forEach((p) => {
       const chip = document.createElement('div');
-      chip.className = 'other-chip';
-      chip.textContent = `${p.name}: ${p.handCount} carte${p.connected ? '' : ' (offline)'}`;
+      chip.className = 'other-chip' + (p.id === state.currentTurnId ? ' active-turn' : '');
+      chip.textContent = `${p.name}: ${p.handCount} cart${p.handCount === 1 ? 'a' : 'e'}${p.connected ? '' : ' (offline)'}`;
       others.appendChild(chip);
     });
+
+    // ---- La mia mano ----
+    const handLabel = document.getElementById('hand-label');
+    handLabel.textContent = myTurn ? 'La tua mano (tocca una carta, poi tocca la pila su cui giocarla)' : 'La tua mano';
 
     const me = state.players.find((p) => p.id === myId);
     const grid = document.getElementById('hand-grid');
@@ -557,28 +711,42 @@
     if (me && me.hand) {
       syncHandOrder(me.hand);
       myHandOrder.forEach((card) => {
-        const isBlocked = card <= state.pileTop;
+        const playableSomewhere = validPileIndexes(state.piles, card).length > 0;
         const btn = document.createElement('button');
-        btn.className = 'card-btn' + (isBlocked ? ' card-btn-blocked' : '');
-        btn.textContent = isBlocked ? `${card} 🚫` : card;
+        let cls = 'card-btn';
+        if (myTurn && !playableSomewhere) cls += ' card-btn-unplayable';
+        if (myTurn && selectedCard === card) cls += ' selected';
+        btn.className = cls;
+        btn.textContent = card;
         btn.dataset.card = card;
-        // NB: il bottone resta cliccabile anche se bloccato (niente
-        // "disabled"), così toccandolo spieghiamo perché non si può più
-        // giocare invece di lasciarlo silenzioso e poco chiaro. Con la
-        // regola severa attiva questo non dovrebbe quasi mai comparire
-        // durante il gioco (la run finirebbe subito al primo blocco), resta
-        // come rete di sicurezza.
+        // NB: la carta resta cliccabile anche se momentaneamente non
+        // giocabile su nessuna pila (niente "disabled"): toccandola si
+        // spiega il perché invece di lasciarla silenziosa e poco chiara.
         btn.addEventListener('click', () => {
-          if (didDrag) { didDrag = false; return; } // era un trascinamento, non un tocco
-          if (isBlocked) {
-            flashError(document.getElementById('game-error'), `La carta ${card} è bloccata per sempre: la pila è già arrivata a ${state.pileTop}.`);
-          } else {
-            requestPlayCard(card);
+          if (didDrag) { didDrag = false; return; }
+          if (!myTurn) {
+            flashError(document.getElementById('game-error'), 'Non è il tuo turno.');
+            return;
           }
+          selectCard(card, state);
         });
         attachDragToReorder(btn, card);
         grid.appendChild(btn);
       });
+    }
+
+    // ---- Fine turno ----
+    const endBtn = document.getElementById('btn-end-turn');
+    const endHint = document.getElementById('end-turn-hint');
+    const required = Math.min(state.minThisTurn, (me ? me.hand.length : 0) + state.cardsPlayedThisTurn);
+    const metMin = state.cardsPlayedThisTurn >= required;
+    endBtn.disabled = !myTurn || !metMin;
+    if (!myTurn) {
+      endHint.textContent = '';
+    } else if (!metMin) {
+      endHint.textContent = `Devi giocare almeno ${required} cart${required === 1 ? 'a' : 'e'} prima di finire il turno (giocate finora: ${state.cardsPlayedThisTurn}).`;
+    } else {
+      endHint.textContent = 'Puoi continuare a giocare carte oppure finire il turno: pescherai automaticamente fino a tornare a mano piena.';
     }
 
     const logBox = document.getElementById('log-box');
@@ -589,17 +757,13 @@
   function renderResult(state) {
     const title = document.getElementById('result-title');
     const sub = document.getElementById('result-sub');
-    const nextBtn = document.getElementById('btn-next-round');
     const restartBtn = document.getElementById('btn-restart');
     const waitMsg = document.getElementById('result-wait-msg');
     const amHost = state.hostId === myId;
 
-    nextBtn.style.display = 'none';
     restartBtn.style.display = 'none';
     waitMsg.style.display = 'none';
 
-    // Cronaca degli ultimi eventi (utile soprattutto al game over: mostra
-    // quale carta ha bloccato tutto e chi l'ha giocata).
     const resultLog = document.getElementById('result-log');
     if (state.log && state.log.length) {
       resultLog.style.display = 'block';
@@ -608,43 +772,24 @@
       resultLog.style.display = 'none';
     }
 
-    if (state.status === 'round_complete') {
-      title.textContent = `🏆 Round ${state.round} superato!`;
-      title.className = 'result-title win';
-      sub.textContent = `Pronti per il Round ${state.round + 1} (${state.round + 1} carte a testa)?`;
-      if (amHost) {
-        nextBtn.style.display = 'block';
-        nextBtn.textContent = `Vai al Round ${state.round + 1}`;
-      } else {
-        waitMsg.textContent = "In attesa che l'host avvii il prossimo round...";
-        waitMsg.style.display = 'block';
-      }
-    } else if (state.status === 'campaign_complete') {
+    if (state.status === 'won') {
       title.textContent = '👑 Avete conquistato il Regno!';
       title.className = 'result-title win';
-      sub.textContent = `Avete completato ogni round fino al Round ${state.maxRound}: gloria eterna alla vostra squadra!`;
-      if (amHost) {
-        restartBtn.style.display = 'block';
-      } else {
-        waitMsg.textContent = "In attesa che l'host inizi una nuova run...";
-        waitMsg.style.display = 'block';
-      }
+      sub.textContent = 'Tutte le 100 carte sono state piazzate: vittoria leggendaria per l\'intera squadra!';
     } else {
       title.textContent = '💀 Game Over';
       title.className = 'result-title lose';
-      sub.textContent = `La run si è conclusa al Round ${state.round}. Record di questa sessione: Round ${state.bestRound}.`;
-      if (amHost) {
-        restartBtn.style.display = 'block';
-      } else {
-        waitMsg.textContent = "In attesa che l'host ricominci dal Round 1...";
-        waitMsg.style.display = 'block';
-      }
+      sub.textContent = `Sono rimaste ${state.remaining} carte non giocate.${state.bestRemaining != null ? ` Miglior risultato di questa sessione: ${state.bestRemaining} carte rimaste.` : ''}`;
+    }
+
+    if (amHost) {
+      restartBtn.style.display = 'block';
+    } else {
+      waitMsg.textContent = "In attesa che l'host ricominci una nuova partita...";
+      waitMsg.style.display = 'block';
     }
   }
 
-  function totalCards(state) {
-    return state.pileCount + state.players.reduce((s, p) => s + p.handCount, 0);
-  }
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }

@@ -1,16 +1,20 @@
-// Cento Carte - gioco cooperativo 1-100
+// Cento Carte del Regno - gioco cooperativo ispirato a "The Game" (Steffen Benndorf)
 // Server Node.js + Express + Socket.io
 
-const path = require('path');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const {
   shuffledDeck,
-  pileTop: pileTopOf,
-  allHandsEmpty: allHandsEmptyOf,
-  strandedCards: strandedCardsOf,
-  maxRound,
+  handSizeFor,
+  createPiles,
+  pileTopValue,
+  isValidPlayOnPile,
+  validPilesForCard,
+  canMeetMinimum,
+  allHandsEmpty,
+  totalRemaining,
+  minCardsThisTurn,
 } = require('./gameLogic');
 
 const app = express();
@@ -20,7 +24,6 @@ const io = new Server(server);
 app.use(express.static(__dirname));
 
 // ---- Stato in memoria ----
-// rooms: { CODE: { code, players: [{id,name,hand:[]}], pile: [], status, hostId, log: [] } }
 const rooms = {};
 
 function generateCode() {
@@ -32,44 +35,45 @@ function generateCode() {
   return code;
 }
 
-function pileTop(room) {
-  return pileTopOf(room.pile);
+function currentPlayer(room) {
+  const id = room.turnOrder[room.turnIndex];
+  return room.players.find((p) => p.id === id);
 }
 
-function allHandsEmpty(room) {
-  return allHandsEmptyOf(room.players.map((p) => p.hand));
+// Passa il turno al prossimo giocatore CONNESSO con almeno una carta in
+// mano (chi ha finito le carte salta il turno, come nell'originale).
+function advanceTurn(room) {
+  const n = room.turnOrder.length;
+  for (let i = 0; i < n; i++) {
+    room.turnIndex = (room.turnIndex + 1) % n;
+    const p = currentPlayer(room);
+    if (p && p.hand.length > 0) return;
+  }
 }
 
-// Carte rimaste bloccate per sempre (valore <= cima pila) in QUALSIASI mano,
-// con il nome di chi le possiede: regola severa, un solo blocco finisce la run.
-function strandedCards(room) {
-  const list = strandedCardsOf(room.players.map((p) => p.hand), room.pile);
-  return list.map((s) => ({ name: room.players[s.playerIndex].name, card: s.card }));
+function pushLog(room, text) {
+  room.log.push(text);
+  if (room.log.length > 50) room.log.shift();
 }
 
-// Distribuisce `room.round` carte a testa da un mazzo rimescolato da zero
-// e riporta lo stato a 'playing'.
-function dealRound(room) {
-  const deck = shuffledDeck();
-  room.players.forEach((p) => {
-    p.hand = deck.splice(0, room.round);
-  });
-  room.pile = [];
-  room.status = 'playing';
-}
-
-// Vista pubblica dello stato, personalizzata per il destinatario:
-// la propria mano è visibile, quelle altrui solo come conteggio.
+// Vista pubblica dello stato, personalizzata per il destinatario: la
+// propria mano è visibile, quelle altrui solo come conteggio.
 function stateFor(room, socketId) {
+  const cur = room.status === 'playing' ? currentPlayer(room) : null;
   return {
     code: room.code,
-    status: room.status,
+    status: room.status, // waiting | playing | won | lost
     hostId: room.hostId,
-    round: room.round,
-    bestRound: room.bestRound,
-    maxRound: maxRound(room.players.length),
-    pileTop: pileTop(room),
-    pileCount: room.pile.length,
+    handSize: room.players.length ? handSizeFor(room.players.length) : 0,
+    deckCount: room.deck ? room.deck.length : 0,
+    minThisTurn: room.deck ? minCardsThisTurn(room.deck.length) : 2,
+    cardsPlayedThisTurn: room.cardsPlayedThisTurn || 0,
+    currentTurnId: cur ? cur.id : null,
+    remaining: room.status === 'lost' || room.status === 'won'
+      ? totalRemaining(room.players.map((p) => p.hand), room.deck ? room.deck.length : 0)
+      : null,
+    bestRemaining: room.bestRemaining,
+    piles: (room.piles || createPiles()).map((p) => ({ type: p.type, top: pileTopValue(p), count: p.cards.length })),
     log: room.log.slice(-8),
     players: room.players.map((p) => ({
       id: p.id,
@@ -89,9 +93,22 @@ function broadcastState(room) {
   }
 }
 
-function pushLog(room, text) {
-  room.log.push(text);
-  if (room.log.length > 50) room.log.shift();
+// Controlla se il giocatore di turno può ancora rispettare il minimo
+// richiesto: se no, la partita finisce lì (regola originale).
+function checkStuck(room) {
+  const min = minCardsThisTurn(room.deck.length);
+  const player = currentPlayer(room);
+  if (!player) return;
+  const need = Math.min(min, player.hand.length);
+  if (player.hand.length < min && room.deck.length === 0 && allHandsEmpty(room.players.map((p) => p.hand))) {
+    return; // caso limite: nessuna carta da nessuna parte, sarà comunque 'won' se tutto vuoto
+  }
+  if (!canMeetMinimum(player.hand, room.piles, need)) {
+    room.status = 'lost';
+    const remaining = totalRemaining(room.players.map((p) => p.hand), room.deck.length);
+    room.bestRemaining = room.bestRemaining == null ? remaining : Math.min(room.bestRemaining, remaining);
+    pushLog(room, `💀 ${player.name} non può più giocare il minimo richiesto (${need}). Game over: ${remaining} carte rimaste non giocate.`);
+  }
 }
 
 io.on('connection', (socket) => {
@@ -100,17 +117,20 @@ io.on('connection', (socket) => {
     const room = {
       code,
       players: [{ id: socket.id, name: (name || 'Giocatore').slice(0, 20), hand: [], connected: true }],
-      pile: [],
-      status: 'waiting', // waiting | playing | round_complete | campaign_complete | lost
+      piles: createPiles(),
+      deck: [],
+      turnOrder: [],
+      turnIndex: 0,
+      cardsPlayedThisTurn: 0,
+      status: 'waiting',
       hostId: socket.id,
-      round: 0,
-      bestRound: 0,
+      bestRemaining: null,
       log: [],
     };
     rooms[code] = room;
     socket.join(code);
     socket.data.roomCode = code;
-    pushLog(room, `${room.players[0].name} ha creato la lobby.`);
+    pushLog(room, `${room.players[0].name} ha fondato la lobby.`);
     cb({ ok: true, code });
     broadcastState(room);
   });
@@ -119,7 +139,7 @@ io.on('connection', (socket) => {
     const room = rooms[(code || '').toUpperCase()];
     if (!room) return cb({ ok: false, error: 'Codice lobby non trovato.' });
     if (room.status !== 'waiting') return cb({ ok: false, error: 'Partita già iniziata.' });
-    if (room.players.length >= 8) return cb({ ok: false, error: 'Lobby piena.' });
+    if (room.players.length >= 5) return cb({ ok: false, error: 'Lobby piena (massimo 5 giocatori).' });
 
     room.players.push({ id: socket.id, name: (name || 'Giocatore').slice(0, 20), hand: [], connected: true });
     socket.join(room.code);
@@ -132,69 +152,94 @@ io.on('connection', (socket) => {
   socket.on('startGame', (_data, cb) => {
     const room = rooms[socket.data.roomCode];
     if (!room) return cb && cb({ ok: false, error: 'Lobby non trovata.' });
-    if (socket.id !== room.hostId) return cb && cb({ ok: false, error: 'Solo chi ha creato la lobby può iniziare.' });
+    if (socket.id !== room.hostId) return cb && cb({ ok: false, error: 'Solo chi ha fondato la lobby può iniziare.' });
     if (room.players.length < 2) return cb && cb({ ok: false, error: 'Servono almeno 2 giocatori.' });
 
-    room.round = 1;
-    dealRound(room);
+    const handSize = handSizeFor(room.players.length);
+    const deck = shuffledDeck();
+    room.players.forEach((p) => {
+      p.hand = deck.splice(0, handSize);
+    });
+    room.deck = deck;
+    room.piles = createPiles();
+    room.turnOrder = room.players.map((p) => p.id);
+    room.turnIndex = 0;
+    room.cardsPlayedThisTurn = 0;
+    room.status = 'playing';
     room.log = [];
-    pushLog(room, `La run è iniziata! Round 1: 1 carta a testa. Giocate senza rivelarvi le carte in mano.`);
+    pushLog(room, `La partita è iniziata! Ognuno ha ${handSize} carte. Tocca a ${room.players[0].name}.`);
     cb && cb({ ok: true });
     broadcastState(room);
   });
 
-  socket.on('playCard', ({ card }, cb) => {
+  socket.on('playCard', ({ card, pileIndex }, cb) => {
     const room = rooms[socket.data.roomCode];
     if (!room) return cb && cb({ ok: false, error: 'Lobby non trovata.' });
     if (room.status !== 'playing') return cb && cb({ ok: false, error: 'Partita non in corso.' });
 
-    const player = room.players.find((p) => p.id === socket.id);
-    if (!player) return cb && cb({ ok: false, error: 'Giocatore non trovato.' });
+    const cur = currentPlayer(room);
+    if (!cur || cur.id !== socket.id) return cb && cb({ ok: false, error: 'Non è il tuo turno.' });
 
-    const idx = player.hand.indexOf(card);
+    const idx = cur.hand.indexOf(card);
     if (idx === -1) return cb && cb({ ok: false, error: 'Non hai quella carta.' });
 
-    const top = pileTop(room);
-    if (card <= top) return cb && cb({ ok: false, error: `Devi giocare una carta più alta di ${top}.` });
+    const pile = room.piles[pileIndex];
+    if (!pile) return cb && cb({ ok: false, error: 'Pila non valida.' });
+    if (!isValidPlayOnPile(pile, card)) {
+      const top = pileTopValue(pile);
+      return cb && cb({ ok: false, error: `Il ${card} non è valido su questa pila (in cima c'è ${top}).` });
+    }
 
-    player.hand.splice(idx, 1);
-    room.pile.push(card);
-    pushLog(room, `${player.name} ha giocato ${card}.`);
+    cur.hand.splice(idx, 1);
+    pile.cards.push(card);
+    room.cardsPlayedThisTurn += 1;
+    pushLog(room, `${cur.name} ha giocato ${card} su una pila ${pile.type === 'asc' ? 'crescente ⬆️' : 'decrescente ⬇️'}.`);
 
-    const stranded = strandedCards(room);
-    if (stranded.length > 0) {
-      // Regola severa: appena una carta resta bloccata per sempre (in
-      // qualunque mano), la run finisce immediatamente.
-      room.status = 'lost';
-      room.bestRound = Math.max(room.bestRound, room.round);
-      const list = stranded.map((s) => `${s.card} (${s.name})`).join(', ');
-      pushLog(room, `💀 ${player.name} ha giocato ${card} e bloccato per sempre: ${list}. Game over al Round ${room.round}.`);
-    } else if (allHandsEmpty(room)) {
-      room.bestRound = Math.max(room.bestRound, room.round);
-      const top = maxRound(room.players.length);
-      if (room.round >= top) {
-        room.status = 'campaign_complete';
-        pushLog(room, `👑 Avete conquistato il Regno! Tutti i round completati fino al Round ${top}.`);
-      } else {
-        room.status = 'round_complete';
-        pushLog(room, `🏆 Round ${room.round} completato! Pronti per il Round ${room.round + 1}?`);
-      }
+    if (room.deck.length === 0 && allHandsEmpty(room.players.map((p) => p.hand))) {
+      room.status = 'won';
+      room.bestRemaining = 0;
+      pushLog(room, '👑 Avete piazzato tutte le 100 carte! Vittoria leggendaria.');
     }
 
     cb && cb({ ok: true });
     broadcastState(room);
   });
 
-  socket.on('nextRound', (_data, cb) => {
+  socket.on('endTurn', (_data, cb) => {
     const room = rooms[socket.data.roomCode];
     if (!room) return cb && cb({ ok: false, error: 'Lobby non trovata.' });
-    if (socket.id !== room.hostId) return cb && cb({ ok: false, error: "Solo l'host può avviare il round successivo." });
-    if (room.status !== 'round_complete') return cb && cb({ ok: false, error: 'Non è il momento di passare al round successivo.' });
+    if (room.status !== 'playing') return cb && cb({ ok: false, error: 'Partita non in corso.' });
 
-    room.round += 1;
-    dealRound(room);
-    room.log = [];
-    pushLog(room, `Round ${room.round}! ${room.round} carte a testa.`);
+    const cur = currentPlayer(room);
+    if (!cur || cur.id !== socket.id) return cb && cb({ ok: false, error: 'Non è il tuo turno.' });
+
+    const min = minCardsThisTurn(room.deck.length);
+    const required = Math.min(min, cur.hand.length + room.cardsPlayedThisTurn); // se aveva meno carte del minimo, basta svuotare la mano
+    if (room.cardsPlayedThisTurn < required) {
+      return cb && cb({ ok: false, error: `Devi giocare almeno ${required} cart${required === 1 ? 'a' : 'e'} prima di finire il turno.` });
+    }
+
+    // Pesca automatica fino a tornare alla mano di riferimento (limitata dal mazzo residuo)
+    const handSize = handSizeFor(room.players.length);
+    while (cur.hand.length < handSize && room.deck.length > 0) {
+      cur.hand.push(room.deck.pop());
+    }
+
+    if (room.deck.length === 0 && allHandsEmpty(room.players.map((p) => p.hand))) {
+      room.status = 'won';
+      room.bestRemaining = 0;
+      pushLog(room, '👑 Avete piazzato tutte le 100 carte! Vittoria leggendaria.');
+      cb && cb({ ok: true });
+      broadcastState(room);
+      return;
+    }
+
+    room.cardsPlayedThisTurn = 0;
+    advanceTurn(room);
+    const next = currentPlayer(room);
+    pushLog(room, `Tocca a ${next.name}.`);
+    checkStuck(room);
+
     cb && cb({ ok: true });
     broadcastState(room);
   });
@@ -204,11 +249,14 @@ io.on('connection', (socket) => {
     if (!room) return cb && cb({ ok: false });
     if (socket.id !== room.hostId) return cb && cb({ ok: false, error: 'Solo l\'host può ricominciare.' });
     room.status = 'waiting';
-    room.round = 0;
-    room.pile = [];
+    room.piles = createPiles();
+    room.deck = [];
+    room.turnOrder = [];
+    room.turnIndex = 0;
+    room.cardsPlayedThisTurn = 0;
     room.players.forEach((p) => (p.hand = []));
     room.log = [];
-    pushLog(room, room.bestRound > 0 ? `Pronti per una nuova run. Record da battere: Round ${room.bestRound}.` : 'Pronti per una nuova run.');
+    pushLog(room, room.bestRemaining != null ? `Pronti per una nuova partita. Miglior risultato: ${room.bestRemaining} carte rimaste.` : 'Pronti per una nuova partita.');
     cb && cb({ ok: true });
     broadcastState(room);
   });
@@ -222,7 +270,6 @@ io.on('connection', (socket) => {
       player.connected = false;
       pushLog(room, `${player.name} si è disconnesso.`);
     }
-    // Rimuove la stanza se tutti disconnessi
     if (room.players.every((p) => !p.connected)) {
       delete rooms[code];
       return;

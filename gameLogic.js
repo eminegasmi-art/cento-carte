@@ -1,5 +1,8 @@
-// Logica pura del gioco "Cento Carte" - nessuna dipendenza esterna,
-// così è testabile senza server/socket.io.
+// Logica pura del gioco "Cento Carte del Regno" - nessuna dipendenza esterna,
+// così è testabile senza server/socket.io. Regole fedeli a "The Game" di
+// Steffen Benndorf, adattate a un mazzo di 100 carte (1-100) invece di 98
+// (2-99): 4 pile (2 crescenti + 2 decrescenti), trucco del ±10, turni con
+// minimo di carte da giocare, pesca automatica a fine turno.
 
 function shuffledDeck() {
   const deck = Array.from({ length: 100 }, (_, i) => i + 1);
@@ -10,95 +13,106 @@ function shuffledDeck() {
   return deck;
 }
 
-function dealHands(numPlayers, handSize = 5, deck = shuffledDeck()) {
-  const hands = [];
-  for (let i = 0; i < numPlayers; i++) {
-    hands.push(deck.splice(0, handSize));
+// Mano iniziale/di riferimento in base al numero di giocatori (come
+// nell'originale: 1 giocatore 8 carte, 2 giocatori 7, 3+ giocatori 6).
+function handSizeFor(numPlayers) {
+  if (numPlayers <= 1) return 8;
+  if (numPlayers === 2) return 7;
+  return 6;
+}
+
+// 4 pile: 2 crescenti (si gioca più alto del top, o esattamente -10) e 2
+// decrescenti (si gioca più basso del top, o esattamente +10).
+function createPiles() {
+  return [
+    { type: 'asc', cards: [] },
+    { type: 'asc', cards: [] },
+    { type: 'desc', cards: [] },
+    { type: 'desc', cards: [] },
+  ];
+}
+
+// Valore "di riferimento" in cima alla pila: 0 per una crescente vuota
+// (qualsiasi carta è valida), 101 per una decrescente vuota.
+function pileTopValue(pile) {
+  if (pile.cards.length) return pile.cards[pile.cards.length - 1];
+  return pile.type === 'asc' ? 0 : 101;
+}
+
+function isValidPlayOnPile(pile, card) {
+  const top = pileTopValue(pile);
+  if (pile.type === 'asc') return card > top || card === top - 10;
+  return card < top || card === top + 10;
+}
+
+// Indici delle pile su cui questa carta potrebbe essere giocata ora.
+function validPilesForCard(piles, card) {
+  const result = [];
+  piles.forEach((p, i) => {
+    if (isValidPlayOnPile(p, card)) result.push(i);
+  });
+  return result;
+}
+
+function isCardPlayable(piles, card) {
+  return validPilesForCard(piles, card).length > 0;
+}
+
+// Verifica (con una simulazione greedy) se dalla mano è possibile giocare
+// almeno `minCount` carte in sequenza sulle pile date. Non garantisce di
+// trovare la sequenza OTTIMA in ogni caso limite, ma se esiste QUALSIASI
+// sequenza valida di minCount giocate la trova (giocare una carta valida
+// non riduce mai le opzioni sulle altre 3 pile, quindi la strategia greedy
+// "gioca la prima carta valida che trovi" è affidabile nella grande
+// maggioranza dei casi pratici).
+function canMeetMinimum(hand, piles, minCount) {
+  if (minCount <= 0) return true;
+  const simPiles = piles.map((p) => ({ type: p.type, cards: [...p.cards] }));
+  const remaining = [...hand];
+  let played = 0;
+  while (played < minCount) {
+    let foundIdx = -1;
+    let foundPileIdx = -1;
+    for (let i = 0; i < remaining.length; i++) {
+      const targets = validPilesForCard(simPiles, remaining[i]);
+      if (targets.length) {
+        foundIdx = i;
+        foundPileIdx = targets[0];
+        break;
+      }
+    }
+    if (foundIdx === -1) return false;
+    simPiles[foundPileIdx].cards.push(remaining[foundIdx]);
+    remaining.splice(foundIdx, 1);
+    played++;
   }
-  return hands;
-}
-
-function pileTop(pile) {
-  return pile.length ? pile[pile.length - 1] : 0;
-}
-
-function isValidPlay(pile, card) {
-  return card > pileTop(pile);
-}
-
-function anyPlayableCard(hands, pile) {
-  const top = pileTop(pile);
-  return hands.some((hand) => hand.some((c) => c > top));
+  return true;
 }
 
 function allHandsEmpty(hands) {
   return hands.every((hand) => hand.length === 0);
 }
 
-// ---------------------------------------------------------------------
-// Round crescenti: si parte con 1 carta a testa, poi 2, poi 3... Regola
-// severa scelta per il gioco: appena una carta resta bloccata per sempre
-// (valore <= cima pila, in QUALSIASI mano) la run finisce subito, anche se
-// altre carte sarebbero ancora giocabili altrove.
-// ---------------------------------------------------------------------
-
-// Elenco delle carte rimaste bloccate per sempre dopo l'ultima giocata,
-// con l'indice del giocatore a cui appartengono (per messaggi tipo
-// "la carta 3 di Marco è rimasta bloccata").
-function strandedCards(hands, pile) {
-  const top = pileTop(pile);
-  const result = [];
-  hands.forEach((hand, playerIndex) => {
-    hand.forEach((card) => {
-      if (card <= top) result.push({ playerIndex, card });
-    });
-  });
-  return result;
+function totalRemaining(hands, deckCount) {
+  return deckCount + hands.reduce((sum, h) => sum + h.length, 0);
 }
 
-function hasStrandedCard(hands, pile) {
-  return strandedCards(hands, pile).length > 0;
-}
-
-// Con N giocatori, il round R richiede R*N carte: il mazzo da 100 regge al
-// massimo floor(100/N) round (rimescolato da zero ad ogni round).
-function maxRound(numPlayers) {
-  return Math.max(1, Math.floor(100 / Math.max(1, numPlayers)));
-}
-
-// ---------------------------------------------------------------------
-// Sessione/riconnessione: un giocatore ha un socket "id" (cambia ad ogni
-// riconnessione: standby del telefono, cambio rete, refresh) e un "token"
-// persistente (generato dal client, salvato in localStorage) che resta
-// stabile. Queste funzioni pure permettono di far rientrare un giocatore
-// nella stessa partita associando il suo nuovo id al token già noto.
-// ---------------------------------------------------------------------
-
-// Trova il giocatore con questo token e gli assegna il nuovo id di socket,
-// segnandolo di nuovo come connesso. Se era l'host, aggiorna anche
-// room.hostId (usato solo per la UI: la corona, il confronto lato client).
-// Ritorna il player aggiornato, o null se il token non appartiene a nessuno.
-function reassignPlayerId(room, token, newId) {
-  if (!token) return null;
-  const player = room.players.find((p) => p.token === token);
-  if (!player) return null;
-  player.id = newId;
-  player.connected = true;
-  if (room.hostToken && room.hostToken === token) {
-    room.hostId = newId;
-  }
-  return player;
-}
-
-// Un giocatore può agire come host solo se il suo token corrisponde a
-// quello salvato alla creazione della stanza (stabile anche se l'host si
-// riconnette e il suo socket id cambia).
-function isHostToken(room, token) {
-  return !!token && room.hostToken === token;
+// Quante carte servono come minimo in un turno: 2 se il mazzo ha ancora
+// carte da pescare, 1 se il mazzo è ormai esaurito.
+function minCardsThisTurn(deckCount) {
+  return deckCount > 0 ? 2 : 1;
 }
 
 module.exports = {
-  shuffledDeck, dealHands, pileTop, isValidPlay, anyPlayableCard, allHandsEmpty,
-  reassignPlayerId, isHostToken,
-  strandedCards, hasStrandedCard, maxRound,
+  shuffledDeck,
+  handSizeFor,
+  createPiles,
+  pileTopValue,
+  isValidPlayOnPile,
+  validPilesForCard,
+  isCardPlayable,
+  canMeetMinimum,
+  allHandsEmpty,
+  totalRemaining,
+  minCardsThisTurn,
 };

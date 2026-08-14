@@ -31,11 +31,6 @@
     --tex-parchment: url('https://www.transparenttextures.com/patterns/old-mathematics.png');
     --tex-leather: url('https://www.transparenttextures.com/patterns/leather.png');
     --tex-stone: url('https://www.transparenttextures.com/patterns/old-wall.png');
-    /* Foto vera di una taverna medievale (licenza CC0, libera da usare) per
-       dare profondità reale allo sfondo della schermata di gioco. Se non si
-       carica, sotto restano comunque la texture di pietra e il gradiente
-       scuro: nessuna rottura visiva. */
-    --tavern-photo: url('https://images.stockcake.com/public/c/5/3/c53b58ac-ab21-470f-b049-3c5ca79b929f_medium/medieval-tavern-interior-stockcake.jpg');
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -233,18 +228,18 @@
     border: 3px solid var(--gold);
     box-shadow: inset 0 0 34px rgba(0,0,0,0.65), 0 4px 10px rgba(0,0,0,0.5);
     padding: 40px 10px 18px;
-    /* Foto vera della taverna in fondo, con un velo scuro sopra per far
-       risaltare tavolo/carte, texture di pietra e gradiente come fallback
-       se la foto non si carica (rete assente/bloccata). */
+    /* Ambiente "taverna" tutto in CSS: bagliore di torce in alto, parete di
+       pietra vera (texture) che sfuma verso il pavimento più scuro in
+       basso. Niente foto esterne: restano coerenti con lo stile disegnato
+       del resto dell'interfaccia invece di stonare come un collage. */
     background-image:
-      linear-gradient(180deg, rgba(16,10,4,0.35), rgba(10,6,3,0.78) 62%, rgba(8,5,2,0.92) 100%),
-      radial-gradient(ellipse 65% 45% at 50% 4%, rgba(255,170,80,0.30), transparent 65%),
-      var(--tavern-photo),
+      radial-gradient(ellipse 65% 45% at 50% 2%, rgba(255,170,80,0.32), transparent 62%),
+      linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0.78) 100%),
       var(--tex-stone),
-      linear-gradient(180deg, #1c130b 0%, #140d07 55%, #0c0704 100%);
-    background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat;
-    background-position: center, center, center 30%, center, center;
-    background-size: cover, cover, cover, auto, cover;
+      linear-gradient(180deg, #362619 0%, #1c130b 45%, #100a05 100%);
+    background-repeat: no-repeat, no-repeat, repeat, no-repeat;
+    background-position: center, center, center, center;
+    background-size: cover, cover, auto, cover;
   }
   .tavern .deco {
     position: absolute;
@@ -312,7 +307,7 @@
   }
   .seat-avatar.offline .figure { opacity: 0.35; filter: grayscale(1); }
 
-  .table-wrap { display: flex; justify-content: center; }
+  .table-wrap { display: flex; flex-direction: column; align-items: center; }
   .table-surface {
     text-align: center;
     width: 82%;
@@ -329,27 +324,49 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 8px;
+  }
+  .table-caption { font-size: 0.78rem; color: var(--muted); padding: 0 10px; }
+
+  /* La carta al centro del tavolo: rappresenta l'ultima carta piazzata
+     nella sequenza, disegnata come una vera carta invece di un numero in
+     un riquadro con scritta. */
+  .table-card {
+    width: 92px;
+    aspect-ratio: 3 / 4;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
   }
-  .pile-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'Cinzel', serif; }
-  .pile-number {
-    font-family: 'Cinzel', serif;
-    font-size: 3.2rem;
-    font-weight: 800;
-    color: var(--gold-light);
-    line-height: 1.1;
-    text-shadow: 0 2px 3px rgba(0,0,0,0.5);
+  .table-card.filled {
+    position: relative;
+    background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
+    border: 3px solid var(--gold);
+    box-shadow: inset 0 0 0 2px #ffffff55, 0 6px 10px rgba(0,0,0,0.5);
   }
-  .pile-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; padding: 0 10px; }
+  .table-card.filled .card-face-value { font-size: 2.4rem; }
+  .table-card.empty {
+    background: rgba(0,0,0,0.2);
+    border: 3px dashed var(--muted);
+  }
+  .table-card.empty .card-face-value {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-family: 'IM Fell English', serif;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
 
-  .table-surface.pile-flash {
+  .table-card.pile-flash {
     animation: pileFlash 0.55s ease;
   }
   @keyframes pileFlash {
-    0% { transform: scale(1.1); box-shadow: 0 0 26px 8px rgba(232,201,106,0.85); border-color: var(--gold-light); }
-    100% { transform: scale(1); box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 0 24px rgba(0,0,0,0.55); }
+    0% { transform: scale(1.25) rotate(-3deg); box-shadow: 0 0 26px 8px rgba(232,201,106,0.85); }
+    100% { transform: scale(1) rotate(0deg); }
   }
-  .table-surface.mistake-flash {
+  .table-card.mistake-flash {
     animation: mistakeFlash 0.6s ease;
   }
   @keyframes mistakeFlash {
@@ -374,15 +391,13 @@
     -webkit-overflow-scrolling: touch;
   }
   .card-btn {
+    position: relative;
     flex: 0 0 auto;
     width: 62px;
     aspect-ratio: 3/4;
     border-radius: 8px;
     background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
     color: var(--ink);
-    font-family: 'Cinzel', serif;
-    font-size: 1.4rem;
-    font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -407,7 +422,52 @@
     background: var(--tex-leather), linear-gradient(160deg, #5a2d2d, #3f1f1f);
     color: var(--blood-light);
     border-color: var(--blood);
-    font-size: 1.05rem;
+  }
+
+  /* ---- Faccia della carta "stile medievale": bordo interno sottile,
+     numero grande al centro, indici agli angoli come una carta vera,
+     stemma decorativo semi-trasparente dietro il numero. ---- */
+  .card-btn::before,
+  .table-card.filled::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1.5px solid var(--gold);
+    border-radius: 5px;
+    pointer-events: none;
+  }
+  .card-btn-blocked::before { border-color: var(--blood-light); }
+  .card-face-corner {
+    position: absolute;
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 0.62rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .card-face-corner.tl { top: 6px; left: 7px; }
+  .card-face-corner.br { bottom: 6px; right: 7px; transform: rotate(180deg); }
+  .table-card .card-face-corner { font-size: 0.8rem; }
+  .table-card .card-face-corner.tl { top: 8px; left: 9px; }
+  .table-card .card-face-corner.br { bottom: 8px; right: 9px; }
+  .card-face-emblem {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    opacity: 0.16;
+    pointer-events: none;
+  }
+  .card-btn-blocked .card-face-emblem { opacity: 0.35; }
+  .table-card .card-face-emblem { font-size: 2.6rem; }
+  .card-face-value {
+    position: relative;
+    z-index: 1;
+    font-family: 'Cinzel', serif;
+    font-size: 1.35rem;
+    font-weight: 800;
   }
 
   .log-box {
@@ -532,11 +592,10 @@
       <span class="deco" style="left:50%; bottom:3%; transform: translateX(-50%);">🪙</span>
       <div class="seats-ring" id="seats-ring"></div>
       <div class="table-wrap">
-        <div class="table-surface" id="table-surface">
-          <div class="pile-label">Sequenza attuale</div>
-          <div class="pile-number" id="pile-top">0</div>
-          <div class="pile-sub" id="pile-sub">0 carte giocate</div>
+        <div class="table-surface">
+          <div class="table-card empty" id="table-card"></div>
         </div>
+        <div class="table-caption" id="table-caption">0 carte giocate su 2</div>
       </div>
     </div>
 
@@ -574,6 +633,19 @@
   // assegnato in base alla sua posizione nell'elenco (stabile per tutti i
   // client, dato che l'ordine arriva identico dal server).
   const AVATAR_ICONS = ['🧙‍♂️', '🛡️', '🏹', '👑', '⚔️', '🎭', '🧝‍♀️', '🧑‍🌾'];
+
+  // Markup della "faccia" di una carta stile medievale: indici agli angoli,
+  // stemma decorativo semi-trasparente, numero grande al centro. Usato sia
+  // per le carte in mano sia per la carta al centro del tavolo.
+  function cardFaceHTML(value, warn) {
+    const emblem = warn ? '⚠️' : '⚜️';
+    return `
+      <span class="card-face-corner tl">${value}</span>
+      <span class="card-face-emblem">${emblem}</span>
+      <span class="card-face-value">${value}</span>
+      <span class="card-face-corner br">${value}</span>
+    `;
+  }
 
   // ---- Ordine della mano scelto dal giocatore (solo locale, non sincronizzato) ----
   // Di default ordiniamo per valore crescente: qui è molto utile vedere
@@ -784,7 +856,7 @@
       div.innerHTML = `
         <div class="figure">${icon}</div>
         <div class="seat-name">${escapeHtml(p.name)}</div>
-        <div class="seat-count">${p.handCount} 🂠</div>
+        <div class="seat-count">🃏 ${p.handCount}</div>
       `;
       ring.appendChild(div);
     });
@@ -794,21 +866,31 @@
     document.getElementById('level-chip').textContent = `Livello ${state.level} di ${state.maxLevel}`;
     document.getElementById('lives-row').textContent = '❤️'.repeat(Math.max(0, state.lives));
 
-    const table = document.getElementById('table-surface');
+    const tableCard = document.getElementById('table-card');
     const mistakeHappened = prevLives != null && state.lives < prevLives;
     const cardPlayed = prevPlayedCount != null && state.playedCount > prevPlayedCount;
-    table.classList.remove('pile-flash', 'mistake-flash');
-    void table.offsetWidth; // forza il reflow per poter far ripartire l'animazione
+    tableCard.classList.remove('pile-flash', 'mistake-flash');
+    void tableCard.offsetWidth; // forza il reflow per poter far ripartire l'animazione
     if (mistakeHappened) {
-      table.classList.add('mistake-flash');
+      tableCard.classList.add('mistake-flash');
     } else if (cardPlayed) {
-      table.classList.add('pile-flash');
+      tableCard.classList.add('pile-flash');
     }
     prevLives = state.lives;
     prevPlayedCount = state.playedCount;
 
-    document.getElementById('pile-top').textContent = state.pileTop;
-    document.getElementById('pile-sub').textContent = `${state.playedCount} carte giocate su ${state.totalThisLevel}`;
+    if (state.pileTop > 0) {
+      tableCard.className = 'table-card filled';
+      tableCard.innerHTML = cardFaceHTML(state.pileTop, false);
+    } else {
+      tableCard.className = 'table-card empty';
+      tableCard.innerHTML = '<span class="card-face-value">Tavolo<br>vuoto</span>';
+    }
+    // riapplichiamo l'eventuale animazione dopo aver rigenerato la classe
+    if (mistakeHappened) tableCard.classList.add('mistake-flash');
+    else if (cardPlayed) tableCard.classList.add('pile-flash');
+
+    document.getElementById('table-caption').textContent = `${state.playedCount} carte giocate su ${state.totalThisLevel}`;
 
     renderSeats(state);
 
@@ -823,7 +905,7 @@
         const isRisky = card <= state.pileTop; // giocarla ora sarebbe comunque un errore certo
         const btn = document.createElement('button');
         btn.className = 'card-btn' + (isRisky ? ' card-btn-blocked' : '');
-        btn.textContent = isRisky ? `${card} ⚠️` : card;
+        btn.innerHTML = cardFaceHTML(card, isRisky);
         btn.dataset.card = card;
         // Ventaglio: le carte esterne ruotano di più e scendono un filo,
         // quella centrale resta dritta e più in alto, come tenendole in

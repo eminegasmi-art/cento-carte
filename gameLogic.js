@@ -1,8 +1,22 @@
-// Logica pura del gioco "Cento Carte del Regno" - nessuna dipendenza esterna,
-// così è testabile senza server/socket.io. Regole fedeli a "The Game" di
-// Steffen Benndorf, adattate a un mazzo di 100 carte (1-100) invece di 98
-// (2-99): 4 pile (2 crescenti + 2 decrescenti), trucco del ±10, turni con
-// minimo di carte da giocare, pesca automatica a fine turno.
+// Logica pura del gioco "Cento Carte del Regno" - versione "Sincronia
+// silenziosa" (ispirata a "The Mind" di Wolfgang Warsch). Nessuna
+// dipendenza esterna, testabile con "node test.js".
+//
+// Regole in breve:
+// - 100 carte (1-100). Ogni livello si mescola tutto da capo e si danno
+//   "livello" carte a testa (livello 1 = 1 carta, livello 2 = 2 carte, ...).
+// - NESSUN turno: chiunque può giocare in qualsiasi momento la propria
+//   carta sulla pila comune (che sale sempre, si parte da 0).
+// - NESSUNA comunicazione di alcun tipo sulle carte in mano: ci si
+//   sincronizza solo osservando quante carte hanno gli altri e la cima
+//   della pila.
+// - Se qualcuno gioca una carta mentre esiste ancora, in una mano
+//   qualsiasi (anche la propria), una carta più bassa: è un errore, si
+//   perde una vita, e tutte le carte più basse ancora in mano vengono
+//   scartate automaticamente (altrimenti resterebbero bloccate per
+//   sempre, dato che la pila sale solo).
+// - Si supera il livello quando tutte le mani sono vuote. Livello massimo
+//   raggiunto = vittoria. Vite a zero = game over immediato.
 
 function shuffledDeck() {
   const deck = Array.from({ length: 100 }, (_, i) => i + 1);
@@ -13,106 +27,52 @@ function shuffledDeck() {
   return deck;
 }
 
-// Mano iniziale/di riferimento in base al numero di giocatori (come
-// nell'originale: 1 giocatore 8 carte, 2 giocatori 7, 3+ giocatori 6).
-function handSizeFor(numPlayers) {
-  if (numPlayers <= 1) return 8;
-  if (numPlayers === 2) return 7;
-  return 6;
+// Livello massimo raggiungibile: limitato dal mazzo (livello*giocatori
+// entro 100) MA anche tappato a 10, per tenere le partite rapide come
+// richiesto (altrimenti con 2 giocatori si arriverebbe al livello 50, una
+// partita lunghissima).
+function maxLevel(numPlayers) {
+  const deckLimit = Math.floor(100 / Math.max(1, numPlayers));
+  return Math.max(1, Math.min(10, deckLimit));
 }
 
-// 4 pile: 2 crescenti (si gioca più alto del top, o esattamente -10) e 2
-// decrescenti (si gioca più basso del top, o esattamente +10).
-function createPiles() {
-  return [
-    { type: 'asc', cards: [] },
-    { type: 'asc', cards: [] },
-    { type: 'desc', cards: [] },
-    { type: 'desc', cards: [] },
-  ];
+// Vite di squadra per l'intera run: un po' di più con più giocatori (più
+// persone, più probabilità statistica di sfasarsi).
+function livesForGame(numPlayers) {
+  return Math.max(2, numPlayers + 1);
 }
 
-// Valore "di riferimento" in cima alla pila: 0 per una crescente vuota
-// (qualsiasi carta è valida), 101 per una decrescente vuota.
-function pileTopValue(pile) {
-  if (pile.cards.length) return pile.cards[pile.cards.length - 1];
-  return pile.type === 'asc' ? 0 : 101;
+// Distribuisce le mani per un livello: mescola sempre da zero e dà
+// `level` carte a ciascuno dei `numPlayers` giocatori.
+function dealLevel(numPlayers, level) {
+  const deck = shuffledDeck();
+  const hands = [];
+  for (let i = 0; i < numPlayers; i++) hands.push(deck.splice(0, level));
+  return hands;
 }
 
-function isValidPlayOnPile(pile, card) {
-  const top = pileTopValue(pile);
-  if (pile.type === 'asc') return card > top || card === top - 10;
-  return card < top || card === top + 10;
-}
-
-// Indici delle pile su cui questa carta potrebbe essere giocata ora.
-function validPilesForCard(piles, card) {
-  const result = [];
-  piles.forEach((p, i) => {
-    if (isValidPlayOnPile(p, card)) result.push(i);
-  });
-  return result;
-}
-
-function isCardPlayable(piles, card) {
-  return validPilesForCard(piles, card).length > 0;
-}
-
-// Verifica (con una simulazione greedy) se dalla mano è possibile giocare
-// almeno `minCount` carte in sequenza sulle pile date. Non garantisce di
-// trovare la sequenza OTTIMA in ogni caso limite, ma se esiste QUALSIASI
-// sequenza valida di minCount giocate la trova (giocare una carta valida
-// non riduce mai le opzioni sulle altre 3 pile, quindi la strategia greedy
-// "gioca la prima carta valida che trovi" è affidabile nella grande
-// maggioranza dei casi pratici).
-function canMeetMinimum(hand, piles, minCount) {
-  if (minCount <= 0) return true;
-  const simPiles = piles.map((p) => ({ type: p.type, cards: [...p.cards] }));
-  const remaining = [...hand];
-  let played = 0;
-  while (played < minCount) {
-    let foundIdx = -1;
-    let foundPileIdx = -1;
-    for (let i = 0; i < remaining.length; i++) {
-      const targets = validPilesForCard(simPiles, remaining[i]);
-      if (targets.length) {
-        foundIdx = i;
-        foundPileIdx = targets[0];
-        break;
-      }
-    }
-    if (foundIdx === -1) return false;
-    simPiles[foundPileIdx].cards.push(remaining[foundIdx]);
-    remaining.splice(foundIdx, 1);
-    played++;
-  }
-  return true;
+// Una giocata è un errore se: la carta è già "superata" dalla cima della
+// pila, OPPURE esiste da qualche parte (in qualsiasi mano) una carta più
+// bassa che quindi andava giocata prima.
+function isMistakePlay(pileTop, hands, card) {
+  if (card <= pileTop) return true;
+  return hands.some((hand) => hand.some((c) => c < card));
 }
 
 function allHandsEmpty(hands) {
   return hands.every((hand) => hand.length === 0);
 }
 
-function totalRemaining(hands, deckCount) {
-  return deckCount + hands.reduce((sum, h) => sum + h.length, 0);
-}
-
-// Quante carte servono come minimo in un turno: 2 se il mazzo ha ancora
-// carte da pescare, 1 se il mazzo è ormai esaurito.
-function minCardsThisTurn(deckCount) {
-  return deckCount > 0 ? 2 : 1;
+function totalCardsInLevel(numPlayers, level) {
+  return numPlayers * level;
 }
 
 module.exports = {
   shuffledDeck,
-  handSizeFor,
-  createPiles,
-  pileTopValue,
-  isValidPlayOnPile,
-  validPilesForCard,
-  isCardPlayable,
-  canMeetMinimum,
+  maxLevel,
+  livesForGame,
+  dealLevel,
+  isMistakePlay,
   allHandsEmpty,
-  totalRemaining,
-  minCardsThisTurn,
+  totalCardsInLevel,
 };

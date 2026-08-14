@@ -161,32 +161,6 @@
   .player-row .dot { width: 8px; height: 8px; border-radius: 50%; background: #7ec96a; display: inline-block; margin-right: 8px; }
   .player-row.offline .dot { background: var(--muted); }
 
-  /* ---- Indicatore di turno: molto visibile, cambia colore in base a chi tocca ---- */
-  .turn-banner {
-    text-align: center;
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-family: 'Cinzel', serif;
-    font-weight: 800;
-    font-size: 1.05rem;
-    letter-spacing: 0.5px;
-    border: 3px solid var(--gold);
-    text-shadow: 0 2px 2px rgba(0,0,0,0.5);
-  }
-  .turn-banner.mine {
-    background: linear-gradient(180deg, var(--green-light), var(--green));
-    color: #10230a;
-    animation: pulse-turn 1.6s ease-in-out infinite;
-  }
-  .turn-banner.other {
-    background: linear-gradient(180deg, var(--wood-light), var(--wood-mid));
-    color: var(--gold-light);
-  }
-  @keyframes pulse-turn {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(143, 217, 122, 0.5); }
-    50% { box-shadow: 0 0 0 10px rgba(143, 217, 122, 0); }
-  }
-
   .top-row {
     display: flex;
     justify-content: space-between;
@@ -194,18 +168,7 @@
     gap: 10px;
     width: 100%;
   }
-  .deck-chip {
-    background: var(--tex-wood), linear-gradient(180deg, var(--wood-light), var(--wood-mid));
-    border: 2px solid var(--gold);
-    border-radius: 999px;
-    padding: 8px 16px;
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--gold-light);
-    white-space: nowrap;
-  }
-  .min-chip {
+  .level-chip {
     background: linear-gradient(180deg, var(--gold-light), var(--gold));
     color: var(--ink);
     border: 2px solid #8a6b14;
@@ -216,14 +179,10 @@
     font-size: 0.85rem;
     white-space: nowrap;
   }
+  .lives-row { font-size: 1.4rem; letter-spacing: 3px; }
+  .lives-row .lost { opacity: 0.25; filter: grayscale(1); }
 
-  /* ---- 4 pile in griglia 2x2 ---- */
-  .piles-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    width: 100%;
-  }
+  /* ---- Pila unica: la sequenza condivisa ---- */
   .pile-area {
     text-align: center;
     background:
@@ -231,35 +190,36 @@
       radial-gradient(ellipse at center, rgba(0,0,0,0.15), transparent 70%),
       linear-gradient(160deg, var(--wood-light), var(--wood-mid));
     border: 3px double var(--gold);
-    border-radius: 12px;
-    padding: 14px 8px;
+    border-radius: 14px;
+    padding: 26px 18px;
     transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
   }
-  .pile-area.valid-target {
-    border-color: var(--green-light);
-    box-shadow: 0 0 0 3px rgba(143, 217, 122, 0.55);
-    cursor: pointer;
+  .pile-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'Cinzel', serif; }
+  .pile-number {
+    font-family: 'Cinzel', serif;
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--gold-light);
+    line-height: 1.1;
+    text-shadow: 0 2px 3px rgba(0,0,0,0.5);
   }
-  /* Piccola "fiammata" dorata quando una carta viene appena piazzata su
-     questa pila: rende tangibile la giocata senza bisogno di animare le
-     singole carte. */
+  .pile-sub { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
   .pile-area.pile-flash {
     animation: pileFlash 0.55s ease;
   }
   @keyframes pileFlash {
-    0% { transform: scale(1.14); box-shadow: 0 0 26px 8px rgba(232,201,106,0.85); border-color: var(--gold-light); }
+    0% { transform: scale(1.1); box-shadow: 0 0 26px 8px rgba(232,201,106,0.85); border-color: var(--gold-light); }
     100% { transform: scale(1); box-shadow: none; }
   }
-  .pile-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'Cinzel', serif; }
-  .pile-number {
-    font-family: 'Cinzel', serif;
-    font-size: 2.3rem;
-    font-weight: 800;
-    color: var(--gold-light);
-    line-height: 1.15;
-    text-shadow: 0 2px 3px rgba(0,0,0,0.5);
+  .pile-area.mistake-flash {
+    animation: mistakeFlash 0.6s ease;
   }
-  .pile-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  @keyframes mistakeFlash {
+    0%, 100% { border-color: var(--gold); }
+    20%, 60% { border-color: var(--blood-light); transform: translateX(-6px); box-shadow: 0 0 26px 6px rgba(122,31,31,0.7); }
+    40%, 80% { transform: translateX(6px); }
+  }
 
   .others-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
   .other-chip {
@@ -272,12 +232,11 @@
     align-items: center;
     gap: 6px;
   }
-  .other-chip.active-turn { border-color: var(--green-light); box-shadow: 0 0 0 2px rgba(143,217,122,0.4); }
 
   .hand-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; text-align: center; }
   .hand-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
     gap: 10px;
   }
   .card-btn {
@@ -286,7 +245,7 @@
     background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
     color: var(--ink);
     font-family: 'Cinzel', serif;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 800;
     display: flex;
     align-items: center;
@@ -296,25 +255,17 @@
     touch-action: none;
     user-select: none;
     box-shadow: inset 0 0 0 2px #ffffff55, 0 3px 4px rgba(0,0,0,0.35);
-    transition: transform 0.12s;
-  }
-  .card-btn.selected {
-    border-color: var(--green-light);
-    transform: translateY(-8px);
-    box-shadow: 0 0 0 3px rgba(143, 217, 122, 0.6), 0 6px 8px rgba(0,0,0,0.4);
   }
   .card-btn.dragging {
     opacity: 0.7;
     transform: scale(1.06) rotate(-2deg);
   }
-  .card-btn-unplayable {
+  .card-btn-blocked {
     background: var(--tex-leather), linear-gradient(160deg, #5a2d2d, #3f1f1f);
     color: var(--blood-light);
     border-color: var(--blood);
+    font-size: 1.05rem;
   }
-
-  .end-turn-wrap { display: flex; flex-direction: column; gap: 6px; }
-  .end-turn-hint { font-size: 0.78rem; color: var(--muted); text-align: center; }
 
   .log-box {
     background: var(--tex-wood), var(--wood-mid);
@@ -323,7 +274,7 @@
     padding: 12px 14px;
     font-size: 0.82rem;
     color: var(--muted);
-    max-height: 110px;
+    max-height: 130px;
     overflow-y: auto;
     width: 100%;
   }
@@ -380,7 +331,7 @@
     </div>
     <div class="status-box" id="home-status"></div>
     <div class="error-box" id="home-error"></div>
-    <p class="hint">Gioco cooperativo a turni: 4 pile (2 crescenti ⬆️, 2 decrescenti ⬇️), si può sempre giocare una carta esattamente ±10 rispetto alla cima per invertire la pila. Regola d'oro: non rivelate mai a voce quali carte avete in mano!</p>
+    <p class="hint">Gioco cooperativo di sincronia silenziosa: si parte con 1 carta a testa, poi 2, poi 3... Non esistono turni: chiunque può giocare quando "sente" che è il momento giusto. <b>Zero parole, zero indizi</b> su cosa avete in mano: solo istinto e osservazione del tavolo.</p>
   </div>
 
   <!-- SCREEN: Lobby -->
@@ -391,39 +342,36 @@
       <p class="hint">Condividi questo codice + il link della pagina con gli altri giocatori.</p>
     </div>
     <div class="card-panel" id="lobby-record-panel" style="display:none; text-align:center">
-      <label>Miglior risultato di questa sessione</label>
-      <div class="lobby-code" id="lobby-record" style="font-size:1.5rem">-</div>
+      <label>Miglior livello di questa sessione</label>
+      <div class="lobby-code" id="lobby-record" style="font-size:1.8rem">Livello -</div>
     </div>
     <div class="card-panel">
       <label>Giocatori in lobby</label>
       <div class="players-list" id="lobby-players"></div>
     </div>
-    <button class="btn-primary" id="btn-start">Inizia la partita</button>
+    <button class="btn-primary" id="btn-start">Inizia la partita (Livello 1)</button>
     <p class="hint" id="lobby-wait-msg">In attesa che l'host avvii la partita...</p>
     <div class="error-box" id="lobby-error"></div>
   </div>
 
   <!-- SCREEN: Game -->
   <div class="screen" id="screen-game">
-    <div class="turn-banner" id="turn-banner">Turno di...</div>
-
     <div class="top-row">
-      <div class="deck-chip" id="deck-chip">Mazzo: 0</div>
-      <div class="min-chip" id="min-chip">Minimo: 2</div>
+      <div class="level-chip" id="level-chip">Livello 1</div>
+      <div class="lives-row" id="lives-row">❤️❤️❤️</div>
     </div>
 
-    <div class="piles-grid" id="piles-grid"></div>
+    <div class="pile-area" id="pile-area">
+      <div class="pile-label">Sequenza attuale</div>
+      <div class="pile-number" id="pile-top">0</div>
+      <div class="pile-sub" id="pile-sub">0 carte giocate</div>
+    </div>
 
     <div class="others-list" id="others-list"></div>
 
     <div>
-      <div class="hand-label" id="hand-label">La tua mano (tocca una carta, poi tocca la pila)</div>
+      <div class="hand-label">La tua mano (tocca per giocare quando pensi sia il momento)</div>
       <div class="hand-grid" id="hand-grid"></div>
-    </div>
-
-    <div class="end-turn-wrap">
-      <button class="btn-primary" id="btn-end-turn" disabled>Fine turno</button>
-      <div class="end-turn-hint" id="end-turn-hint"></div>
     </div>
 
     <div class="log-box" id="log-box"></div>
@@ -437,6 +385,7 @@
       <p id="result-sub" class="hint" style="margin-top:10px"></p>
     </div>
     <div class="log-box" id="result-log" style="display:none"></div>
+    <button class="btn-primary" id="btn-next-level">Prossimo livello</button>
     <button class="btn-primary" id="btn-restart">Nuova partita</button>
     <p class="hint" id="result-wait-msg">In attesa dell'host...</p>
   </div>
@@ -449,22 +398,24 @@
   const socket = io();
   let myId = null;
   let isHost = false;
-  let selectedCard = null; // carta attualmente selezionata in mano (in attesa che si scelga la pila)
 
   // ---- Ordine della mano scelto dal giocatore (solo locale, non sincronizzato) ----
+  // Di default ordiniamo per valore crescente: qui è molto utile vedere
+  // subito qual è la propria carta più bassa. Restano comunque
+  // riordinabili trascinandole, se si preferisce un altro ordine.
   let myHandOrder = [];
   let didDrag = false;
 
-  // Le carte NON vengono ordinate dal server. Manteniamo un ordine locale
-  // scelto dal giocatore: quando arriva una nuova mano (carta mai vista
-  // prima, es. dopo la pesca) la aggiungiamo in coda; quando una carta viene
-  // giocata la togliamo mantenendo l'ordine delle rimanenti.
   function syncHandOrder(serverHand) {
     const serverSet = new Set(serverHand);
-    myHandOrder = myHandOrder.filter((c) => serverSet.has(c));
-    serverHand.forEach((c) => {
-      if (!myHandOrder.includes(c)) myHandOrder.push(c);
-    });
+    const known = myHandOrder.filter((c) => serverSet.has(c));
+    const newOnes = serverHand.filter((c) => !myHandOrder.includes(c));
+    if (newOnes.length) {
+      // Mano nuova (o carte aggiunte): ricostruiamo in ordine crescente.
+      myHandOrder = [...known, ...newOnes].sort((a, b) => a - b);
+    } else {
+      myHandOrder = known;
+    }
   }
 
   // Trascinamento con Pointer Events (funziona sia con dito che mouse,
@@ -566,62 +517,35 @@
       if (res && !res.ok) alert(res.error || 'Errore');
     });
   });
-
-  // ---- Gioco: logica pila valida per una carta (rispecchia gameLogic.js) ----
-  function pileTopValue(pile) {
-    return pile.count > 0 ? pile.top : (pile.type === 'asc' ? 0 : 101);
-  }
-  function isValidPlayOnPile(pile, card) {
-    const top = pileTopValue(pile);
-    if (pile.type === 'asc') return card > top || card === top - 10;
-    return card < top || card === top + 10;
-  }
-  function validPileIndexes(piles, card) {
-    const out = [];
-    piles.forEach((p, i) => { if (isValidPlayOnPile(p, card)) out.push(i); });
-    return out;
-  }
-
-  // ---- Gioco: selezione carta -> selezione pila ----
-  function selectCard(card, state) {
-    const valid = validPileIndexes(state.piles, card);
-    if (!valid.length) {
-      const tops = state.piles.map((p, i) => `${p.type === 'asc' ? '⬆️' : '⬇️'} ${pileTopValue(p)}`).join('  ');
-      flashError(document.getElementById('game-error'), `Il ${card} non è giocabile su nessuna pila in questo momento. Cime attuali: ${tops}`);
-      selectedCard = null;
-    } else if (selectedCard === card) {
-      selectedCard = null; // secondo tocco sulla stessa carta: deseleziona
-    } else {
-      selectedCard = card;
-    }
-    renderGame(lastState);
-  }
-  function requestPlayCard(card, pileIndex) {
-    socket.emit('playCard', { card, pileIndex }, (res) => {
-      if (res && !res.ok) flashError(document.getElementById('game-error'), res.error || 'Errore');
-      selectedCard = null;
-    });
-  }
-  document.getElementById('btn-end-turn').addEventListener('click', () => {
-    socket.emit('endTurn', {}, (res) => {
-      if (res && !res.ok) flashError(document.getElementById('game-error'), res.error || 'Errore');
+  document.getElementById('btn-next-level').addEventListener('click', () => {
+    socket.emit('nextLevel', {}, (res) => {
+      if (res && !res.ok) alert(res.error || 'Errore');
     });
   });
 
+  // ---- Gioco: giocare una carta (un solo tocco, niente conferme) ----
+  function requestPlayCard(card) {
+    socket.emit('playCard', { card }, (res) => {
+      if (res && !res.ok) flashError(document.getElementById('game-error'), res.error || 'Errore');
+    });
+  }
+
   // ---- Stato dal server ----
   let lastState = null;
-  let prevPileCounts = null; // per animare la pila su cui è appena arrivata una carta
+  let prevLives = null;
+  let prevPlayedCount = null;
   socket.on('state', (state) => {
     lastState = state;
     isHost = state.hostId === myId;
     if (state.status === 'waiting') {
-      prevPileCounts = null;
+      prevLives = null;
+      prevPlayedCount = null;
       renderLobby(state);
       showScreen('lobby');
     } else if (state.status === 'playing') {
       renderGame(state);
       showScreen('game');
-    } else if (state.status === 'won' || state.status === 'lost') {
+    } else if (state.status === 'level_complete' || state.status === 'won' || state.status === 'lost') {
       renderResult(state);
       showScreen('result');
     }
@@ -630,11 +554,9 @@
   function renderLobby(state) {
     document.getElementById('lobby-code').textContent = state.code;
     const recordPanel = document.getElementById('lobby-record-panel');
-    if (state.bestRemaining != null) {
+    if (state.bestLevel > 0) {
       recordPanel.style.display = 'block';
-      document.getElementById('lobby-record').textContent = state.bestRemaining === 0
-        ? '👑 Partita vinta!'
-        : `${state.bestRemaining} carte rimaste`;
+      document.getElementById('lobby-record').textContent = `Livello ${state.bestLevel}`;
     } else {
       recordPanel.style.display = 'none';
     }
@@ -659,51 +581,37 @@
   }
 
   function renderGame(state) {
-    const myTurn = state.currentTurnId === myId;
-    const turnPlayer = state.players.find((p) => p.id === state.currentTurnId);
+    document.getElementById('level-chip').textContent = `Livello ${state.level} di ${state.maxLevel}`;
 
-    const banner = document.getElementById('turn-banner');
-    banner.className = 'turn-banner ' + (myTurn ? 'mine' : 'other');
-    banner.textContent = myTurn ? '⚔️ È il tuo turno!' : `Turno di ${turnPlayer ? escapeHtml(turnPlayer.name) : '...'}`;
+    const livesRow = document.getElementById('lives-row');
+    livesRow.textContent = '❤️'.repeat(Math.max(0, state.lives));
 
-    document.getElementById('deck-chip').textContent = `Mazzo: ${state.deckCount}`;
-    document.getElementById('min-chip').textContent = `Minimo a turno: ${state.minThisTurn}`;
+    const pileArea = document.getElementById('pile-area');
+    const mistakeHappened = prevLives != null && state.lives < prevLives;
+    const cardPlayed = prevPlayedCount != null && state.playedCount > prevPlayedCount;
+    pileArea.classList.remove('pile-flash', 'mistake-flash');
+    // Forziamo il reflow per poter far ripartire l'animazione anche se la
+    // classe era già stata rimossa nello stesso ciclo di render.
+    void pileArea.offsetWidth;
+    if (mistakeHappened) {
+      pileArea.classList.add('mistake-flash');
+    } else if (cardPlayed) {
+      pileArea.classList.add('pile-flash');
+    }
+    prevLives = state.lives;
+    prevPlayedCount = state.playedCount;
 
-    // ---- 4 pile ----
-    const pilesGrid = document.getElementById('piles-grid');
-    pilesGrid.innerHTML = '';
-    const validTargets = (myTurn && selectedCard != null) ? validPileIndexes(state.piles, selectedCard) : [];
-    state.piles.forEach((pile, i) => {
-      const div = document.createElement('div');
-      const justPlayed = prevPileCounts && pile.count > prevPileCounts[i];
-      div.className = 'pile-area' + (validTargets.includes(i) ? ' valid-target' : '') + (justPlayed ? ' pile-flash' : '');
-      const icon = pile.type === 'asc' ? '⬆️' : '⬇️';
-      const top = pileTopValue(pile);
-      div.innerHTML = `
-        <div class="pile-label">${icon} ${pile.type === 'asc' ? 'Crescente' : 'Decrescente'}</div>
-        <div class="pile-number">${pile.count === 0 ? (pile.type === 'asc' ? '–' : '–') : top}</div>
-        <div class="pile-sub">${pile.count} cart${pile.count === 1 ? 'a' : 'e'}</div>
-      `;
-      if (validTargets.includes(i)) {
-        div.addEventListener('click', () => requestPlayCard(selectedCard, i));
-      }
-      pilesGrid.appendChild(div);
-    });
-    prevPileCounts = state.piles.map((p) => p.count);
+    document.getElementById('pile-top').textContent = state.pileTop;
+    document.getElementById('pile-sub').textContent = `${state.playedCount} carte giocate su ${state.totalThisLevel}`;
 
-    // ---- Altri giocatori ----
     const others = document.getElementById('others-list');
     others.innerHTML = '';
     state.players.filter((p) => p.id !== myId).forEach((p) => {
       const chip = document.createElement('div');
-      chip.className = 'other-chip' + (p.id === state.currentTurnId ? ' active-turn' : '');
+      chip.className = 'other-chip';
       chip.textContent = `${p.name}: ${p.handCount} cart${p.handCount === 1 ? 'a' : 'e'}${p.connected ? '' : ' (offline)'}`;
       others.appendChild(chip);
     });
-
-    // ---- La mia mano ----
-    const handLabel = document.getElementById('hand-label');
-    handLabel.textContent = myTurn ? 'La tua mano (tocca una carta, poi tocca la pila su cui giocarla)' : 'La tua mano';
 
     const me = state.players.find((p) => p.id === myId);
     const grid = document.getElementById('hand-grid');
@@ -711,42 +619,23 @@
     if (me && me.hand) {
       syncHandOrder(me.hand);
       myHandOrder.forEach((card) => {
-        const playableSomewhere = validPileIndexes(state.piles, card).length > 0;
+        const isRisky = card <= state.pileTop; // giocarla ora sarebbe comunque un errore certo
         const btn = document.createElement('button');
-        let cls = 'card-btn';
-        if (myTurn && !playableSomewhere) cls += ' card-btn-unplayable';
-        if (myTurn && selectedCard === card) cls += ' selected';
-        btn.className = cls;
-        btn.textContent = card;
+        btn.className = 'card-btn' + (isRisky ? ' card-btn-blocked' : '');
+        btn.textContent = isRisky ? `${card} ⚠️` : card;
         btn.dataset.card = card;
-        // NB: la carta resta cliccabile anche se momentaneamente non
-        // giocabile su nessuna pila (niente "disabled"): toccandola si
-        // spiega il perché invece di lasciarla silenziosa e poco chiara.
+        // NB: la carta resta cliccabile anche quando sarebbe sicuramente un
+        // errore (niente "disabled"): toccandola capiamo comunque il
+        // motivo invece di trovarla silenziosa e poco chiara. Non blocchiamo
+        // MAI in base alle mani altrui (quell'informazione è vietata!):
+        // solo il confronto con la cima della pila, che è pubblica.
         btn.addEventListener('click', () => {
           if (didDrag) { didDrag = false; return; }
-          if (!myTurn) {
-            flashError(document.getElementById('game-error'), 'Non è il tuo turno.');
-            return;
-          }
-          selectCard(card, state);
+          requestPlayCard(card);
         });
         attachDragToReorder(btn, card);
         grid.appendChild(btn);
       });
-    }
-
-    // ---- Fine turno ----
-    const endBtn = document.getElementById('btn-end-turn');
-    const endHint = document.getElementById('end-turn-hint');
-    const required = Math.min(state.minThisTurn, (me ? me.hand.length : 0) + state.cardsPlayedThisTurn);
-    const metMin = state.cardsPlayedThisTurn >= required;
-    endBtn.disabled = !myTurn || !metMin;
-    if (!myTurn) {
-      endHint.textContent = '';
-    } else if (!metMin) {
-      endHint.textContent = `Devi giocare almeno ${required} cart${required === 1 ? 'a' : 'e'} prima di finire il turno (giocate finora: ${state.cardsPlayedThisTurn}).`;
-    } else {
-      endHint.textContent = 'Puoi continuare a giocare carte oppure finire il turno: pescherai automaticamente fino a tornare a mano piena.';
     }
 
     const logBox = document.getElementById('log-box');
@@ -757,10 +646,12 @@
   function renderResult(state) {
     const title = document.getElementById('result-title');
     const sub = document.getElementById('result-sub');
+    const nextBtn = document.getElementById('btn-next-level');
     const restartBtn = document.getElementById('btn-restart');
     const waitMsg = document.getElementById('result-wait-msg');
     const amHost = state.hostId === myId;
 
+    nextBtn.style.display = 'none';
     restartBtn.style.display = 'none';
     waitMsg.style.display = 'none';
 
@@ -772,21 +663,37 @@
       resultLog.style.display = 'none';
     }
 
-    if (state.status === 'won') {
-      title.textContent = '👑 Avete conquistato il Regno!';
+    if (state.status === 'level_complete') {
+      title.textContent = `🏆 Livello ${state.level} superato!`;
       title.className = 'result-title win';
-      sub.textContent = 'Tutte le 100 carte sono state piazzate: vittoria leggendaria per l\'intera squadra!';
+      sub.textContent = `${state.lives} vit${state.lives === 1 ? 'a' : 'e'} rimaste. Pronti per il Livello ${state.level + 1} (${state.level + 1} carte a testa)?`;
+      if (amHost) {
+        nextBtn.style.display = 'block';
+        nextBtn.textContent = `Vai al Livello ${state.level + 1}`;
+      } else {
+        waitMsg.textContent = "In attesa che l'host avvii il prossimo livello...";
+        waitMsg.style.display = 'block';
+      }
+    } else if (state.status === 'won') {
+      title.textContent = '👑 Sincronia perfetta!';
+      title.className = 'result-title win';
+      sub.textContent = `Avete superato ogni livello fino al Livello ${state.maxLevel}: gloria eterna alla vostra squadra!`;
+      if (amHost) {
+        restartBtn.style.display = 'block';
+      } else {
+        waitMsg.textContent = "In attesa che l'host inizi una nuova partita...";
+        waitMsg.style.display = 'block';
+      }
     } else {
       title.textContent = '💀 Game Over';
       title.className = 'result-title lose';
-      sub.textContent = `Sono rimaste ${state.remaining} carte non giocate.${state.bestRemaining != null ? ` Miglior risultato di questa sessione: ${state.bestRemaining} carte rimaste.` : ''}`;
-    }
-
-    if (amHost) {
-      restartBtn.style.display = 'block';
-    } else {
-      waitMsg.textContent = "In attesa che l'host ricominci una nuova partita...";
-      waitMsg.style.display = 'block';
+      sub.textContent = `La partita si è conclusa al Livello ${state.level}. Miglior livello di questa sessione: ${state.bestLevel ?? '-'}.`;
+      if (amHost) {
+        restartBtn.style.display = 'block';
+      } else {
+        waitMsg.textContent = "In attesa che l'host ricominci da capo...";
+        waitMsg.style.display = 'block';
+      }
     }
   }
 

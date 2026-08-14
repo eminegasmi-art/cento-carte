@@ -31,6 +31,11 @@
     --tex-parchment: url('https://www.transparenttextures.com/patterns/old-mathematics.png');
     --tex-leather: url('https://www.transparenttextures.com/patterns/leather.png');
     --tex-stone: url('https://www.transparenttextures.com/patterns/old-wall.png');
+    /* Foto vera di una taverna medievale (licenza CC0, libera da usare) per
+       dare profondità reale allo sfondo della schermata di gioco. Se non si
+       carica, sotto restano comunque la texture di pietra e il gradiente
+       scuro: nessuna rottura visiva. */
+    --tavern-photo: url('https://images.stockcake.com/public/c/5/3/c53b58ac-ab21-470f-b049-3c5ca79b929f_medium/medieval-tavern-interior-stockcake.jpg');
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -228,10 +233,26 @@
     border: 3px solid var(--gold);
     box-shadow: inset 0 0 34px rgba(0,0,0,0.65), 0 4px 10px rgba(0,0,0,0.5);
     padding: 40px 10px 18px;
-    background:
+    /* Foto vera della taverna in fondo, con un velo scuro sopra per far
+       risaltare tavolo/carte, texture di pietra e gradiente come fallback
+       se la foto non si carica (rete assente/bloccata). */
+    background-image:
+      linear-gradient(180deg, rgba(16,10,4,0.35), rgba(10,6,3,0.78) 62%, rgba(8,5,2,0.92) 100%),
       radial-gradient(ellipse 65% 45% at 50% 4%, rgba(255,170,80,0.30), transparent 65%),
+      var(--tavern-photo),
       var(--tex-stone),
       linear-gradient(180deg, #1c130b 0%, #140d07 55%, #0c0704 100%);
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat;
+    background-position: center, center, center 30%, center, center;
+    background-size: cover, cover, cover, auto, cover;
+  }
+  .tavern .deco {
+    position: absolute;
+    font-size: 1.3rem;
+    opacity: 0.9;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.7));
+    pointer-events: none;
+    z-index: 1;
   }
   .tavern::before, .tavern::after {
     content: '🔥';
@@ -338,12 +359,23 @@
   }
 
   .hand-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; text-align: center; }
+  /* Le carte in mano a ventaglio, come le si terrebbe davvero al tavolo:
+     leggermente sovrapposte, ruotate verso i lati e con quelle esterne un
+     filo più basse di quella centrale. */
   .hand-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-    gap: 10px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 26px 24px 6px;
+    min-height: 148px;
+    -webkit-overflow-scrolling: touch;
   }
   .card-btn {
+    flex: 0 0 auto;
+    width: 62px;
     aspect-ratio: 3/4;
     border-radius: 8px;
     background: var(--tex-parchment), linear-gradient(160deg, var(--parchment), var(--parchment-2));
@@ -358,11 +390,18 @@
     padding: 0;
     touch-action: none;
     user-select: none;
-    box-shadow: inset 0 0 0 2px #ffffff55, 0 3px 4px rgba(0,0,0,0.35);
+    box-shadow: inset 0 0 0 2px #ffffff55, 0 4px 6px rgba(0,0,0,0.45);
+    margin-left: -24px;
+    transform-origin: bottom center;
+    transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px));
+    transition: transform 0.15s;
   }
+  .card-btn:first-child { margin-left: 0; }
   .card-btn.dragging {
-    opacity: 0.7;
-    transform: scale(1.06) rotate(-2deg);
+    opacity: 0.85;
+    z-index: 999 !important;
+    transform: scale(1.1) rotate(-4deg) translateY(-16px);
+    box-shadow: 0 8px 14px rgba(0,0,0,0.6);
   }
   .card-btn-blocked {
     background: var(--tex-leather), linear-gradient(160deg, #5a2d2d, #3f1f1f);
@@ -488,6 +527,9 @@
     </div>
 
     <div class="tavern">
+      <span class="deco" style="left:4%; bottom:8%;">🍺</span>
+      <span class="deco" style="right:4%; bottom:8%;">🍺</span>
+      <span class="deco" style="left:50%; bottom:3%; transform: translateX(-50%);">🪙</span>
       <div class="seats-ring" id="seats-ring"></div>
       <div class="table-wrap">
         <div class="table-surface" id="table-surface">
@@ -775,12 +817,23 @@
     grid.innerHTML = '';
     if (me && me.hand) {
       syncHandOrder(me.hand);
-      myHandOrder.forEach((card) => {
+      const n = myHandOrder.length;
+      const maxSpread = Math.min(46, 7 * n); // gradi totali del ventaglio, più stretto con poche carte
+      myHandOrder.forEach((card, i) => {
         const isRisky = card <= state.pileTop; // giocarla ora sarebbe comunque un errore certo
         const btn = document.createElement('button');
         btn.className = 'card-btn' + (isRisky ? ' card-btn-blocked' : '');
         btn.textContent = isRisky ? `${card} ⚠️` : card;
         btn.dataset.card = card;
+        // Ventaglio: le carte esterne ruotano di più e scendono un filo,
+        // quella centrale resta dritta e più in alto, come tenendole in
+        // mano davvero.
+        const t = n === 1 ? 0.5 : i / (n - 1);
+        const angle = (t - 0.5) * maxSpread;
+        const lift = Math.abs(t - 0.5) * 2 * 16;
+        btn.style.setProperty('--rot', angle.toFixed(1) + 'deg');
+        btn.style.setProperty('--lift', lift.toFixed(1) + 'px');
+        btn.style.zIndex = String(i + 1);
         // NB: la carta resta cliccabile anche quando sarebbe sicuramente un
         // errore (niente "disabled"): toccandola capiamo comunque il
         // motivo invece di trovarla silenziosa e poco chiara. Non blocchiamo

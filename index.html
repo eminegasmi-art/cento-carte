@@ -30,6 +30,7 @@
     --tex-wood: url('https://www.transparenttextures.com/patterns/dark-wood.png');
     --tex-parchment: url('https://www.transparenttextures.com/patterns/old-mathematics.png');
     --tex-leather: url('https://www.transparenttextures.com/patterns/leather.png');
+    --tex-stone: url('https://www.transparenttextures.com/patterns/old-wall.png');
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -117,6 +118,42 @@
     color: var(--text);
     border: 2px solid var(--gold);
   }
+  .btn-link {
+    background: none;
+    border: none;
+    color: var(--muted);
+    text-decoration: underline;
+    width: auto;
+    padding: 6px 4px;
+    font-family: 'IM Fell English', serif;
+    font-size: 0.9rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* Scelta iniziale: crea o entra */
+  .choice-grid { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+  .choice-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 26px 16px;
+    border-radius: 12px;
+    border: 3px double var(--gold);
+    background: var(--tex-wood), linear-gradient(160deg, var(--wood-light), var(--wood-mid));
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    box-shadow: inset 0 0 18px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.35);
+  }
+  .choice-btn .icon { font-size: 2rem; }
+  .choice-btn.primary {
+    background: var(--tex-leather), linear-gradient(160deg, var(--gold-light), var(--gold));
+    color: var(--ink);
+    border-color: #8a6b14;
+  }
 
   .error-box {
     background: #4a141422;
@@ -180,57 +217,124 @@
     white-space: nowrap;
   }
   .lives-row { font-size: 1.4rem; letter-spacing: 3px; }
-  .lives-row .lost { opacity: 0.25; filter: grayscale(1); }
 
-  /* ---- Pila unica: la sequenza condivisa ---- */
-  .pile-area {
+  /* ---- La taverna: la "stanza" con il tavolo al centro e i giocatori
+     seduti intorno, vista dal proprio posto (si vedono solo gli altri). ---- */
+  .tavern {
+    position: relative;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 3px solid var(--gold);
+    box-shadow: inset 0 0 34px rgba(0,0,0,0.65), 0 4px 10px rgba(0,0,0,0.5);
+    padding: 40px 10px 18px;
+    background:
+      radial-gradient(ellipse 65% 45% at 50% 4%, rgba(255,170,80,0.30), transparent 65%),
+      var(--tex-stone),
+      linear-gradient(180deg, #1c130b 0%, #140d07 55%, #0c0704 100%);
+  }
+  .tavern::before, .tavern::after {
+    content: '🔥';
+    position: absolute;
+    top: 6px;
+    font-size: 1.1rem;
+    filter: drop-shadow(0 0 6px rgba(255,140,40,0.9));
+    animation: torchFlicker 1.8s ease-in-out infinite;
+    z-index: 2;
+  }
+  .tavern::before { left: 10px; }
+  .tavern::after { right: 10px; animation-delay: 0.6s; }
+  @keyframes torchFlicker {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  .seats-ring { position: relative; height: 70px; }
+  .seat-avatar {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    width: 56px;
+  }
+  .seat-avatar .figure {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--tex-leather), radial-gradient(circle at 35% 30%, #8a6a45, #3a2712);
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.55);
+  }
+  .seat-avatar .seat-name {
+    font-size: 0.6rem;
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    max-width: 58px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  }
+  .seat-avatar .seat-count {
+    font-size: 0.58rem;
+    color: var(--text);
+    background: rgba(0,0,0,0.45);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 1px 6px;
+  }
+  .seat-avatar.offline .figure { opacity: 0.35; filter: grayscale(1); }
+
+  .table-wrap { display: flex; justify-content: center; }
+  .table-surface {
     text-align: center;
+    width: 82%;
+    max-width: 280px;
+    aspect-ratio: 3 / 2;
+    border-radius: 50%;
     background:
       var(--tex-wood),
       radial-gradient(ellipse at center, rgba(0,0,0,0.15), transparent 70%),
       linear-gradient(160deg, var(--wood-light), var(--wood-mid));
-    border: 3px double var(--gold);
-    border-radius: 14px;
-    padding: 26px 18px;
+    border: 4px solid var(--gold);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 0 24px rgba(0,0,0,0.55);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
   }
-  .pile-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'Cinzel', serif; }
+  .pile-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'Cinzel', serif; }
   .pile-number {
     font-family: 'Cinzel', serif;
-    font-size: 4rem;
+    font-size: 3.2rem;
     font-weight: 800;
     color: var(--gold-light);
     line-height: 1.1;
     text-shadow: 0 2px 3px rgba(0,0,0,0.5);
   }
-  .pile-sub { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .pile-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; padding: 0 10px; }
 
-  .pile-area.pile-flash {
+  .table-surface.pile-flash {
     animation: pileFlash 0.55s ease;
   }
   @keyframes pileFlash {
     0% { transform: scale(1.1); box-shadow: 0 0 26px 8px rgba(232,201,106,0.85); border-color: var(--gold-light); }
-    100% { transform: scale(1); box-shadow: none; }
+    100% { transform: scale(1); box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 0 24px rgba(0,0,0,0.55); }
   }
-  .pile-area.mistake-flash {
+  .table-surface.mistake-flash {
     animation: mistakeFlash 0.6s ease;
   }
   @keyframes mistakeFlash {
     0%, 100% { border-color: var(--gold); }
     20%, 60% { border-color: var(--blood-light); transform: translateX(-6px); box-shadow: 0 0 26px 6px rgba(122,31,31,0.7); }
     40%, 80% { transform: translateX(6px); }
-  }
-
-  .others-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-  .other-chip {
-    background: var(--tex-wood), var(--wood-mid);
-    border: 1px solid var(--gold);
-    padding: 8px 12px;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
 
   .hand-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; text-align: center; }
@@ -314,24 +418,46 @@
 <header>🏰 Cento Carte del Regno</header>
 <main>
 
-  <!-- SCREEN: Home -->
+  <!-- SCREEN: Home (solo scelta iniziale, niente nome qui) -->
   <div class="screen active" id="screen-home">
-    <div class="card-panel">
-      <label for="input-name">Il tuo nome</label>
-      <input type="text" id="input-name" placeholder="Es. Emmo" style="text-transform:none" maxlength="20" />
+    <div class="choice-grid">
+      <button class="choice-btn primary" id="btn-choice-create">
+        <span class="icon">🏰</span>
+        <span>Fonda una nuova lobby</span>
+      </button>
+      <button class="choice-btn" id="btn-choice-join">
+        <span class="icon">🗝️</span>
+        <span>Entra in una lobby</span>
+      </button>
     </div>
-    <div class="card-panel">
-      <button class="btn-primary" id="btn-create">Fonda una nuova lobby</button>
-    </div>
-    <div class="card-panel">
-      <label for="input-code">Codice lobby</label>
-      <input type="text" id="input-code" placeholder="Es. AB3K" maxlength="4" />
-      <div style="height:10px"></div>
-      <button class="btn-secondary" id="btn-join">Entra nella lobby</button>
-    </div>
-    <div class="status-box" id="home-status"></div>
-    <div class="error-box" id="home-error"></div>
     <p class="hint">Gioco cooperativo di sincronia silenziosa: si parte con 1 carta a testa, poi 2, poi 3... Non esistono turni: chiunque può giocare quando "sente" che è il momento giusto. <b>Zero parole, zero indizi</b> su cosa avete in mano: solo istinto e osservazione del tavolo.</p>
+  </div>
+
+  <!-- SCREEN: nome per chi fonda -->
+  <div class="screen" id="screen-create-name">
+    <div class="card-panel">
+      <label for="input-name-create">Il tuo nome</label>
+      <input type="text" id="input-name-create" placeholder="Es. Emmo" style="text-transform:none" maxlength="20" />
+    </div>
+    <button class="btn-primary" id="btn-create-confirm">Fonda la lobby</button>
+    <button class="btn-link" id="btn-create-back">← Torna indietro</button>
+    <div class="status-box" id="create-status"></div>
+    <div class="error-box" id="create-error"></div>
+  </div>
+
+  <!-- SCREEN: nome + codice per chi entra -->
+  <div class="screen" id="screen-join-name">
+    <div class="card-panel">
+      <label for="input-name-join">Il tuo nome</label>
+      <input type="text" id="input-name-join" placeholder="Es. Emmo" style="text-transform:none" maxlength="20" />
+      <div style="height:14px"></div>
+      <label for="input-code-join">Codice lobby</label>
+      <input type="text" id="input-code-join" placeholder="Es. AB3K" maxlength="4" />
+    </div>
+    <button class="btn-primary" id="btn-join-confirm">Entra nella lobby</button>
+    <button class="btn-link" id="btn-join-back">← Torna indietro</button>
+    <div class="status-box" id="join-status"></div>
+    <div class="error-box" id="join-error"></div>
   </div>
 
   <!-- SCREEN: Lobby -->
@@ -361,16 +487,19 @@
       <div class="lives-row" id="lives-row">❤️❤️❤️</div>
     </div>
 
-    <div class="pile-area" id="pile-area">
-      <div class="pile-label">Sequenza attuale</div>
-      <div class="pile-number" id="pile-top">0</div>
-      <div class="pile-sub" id="pile-sub">0 carte giocate</div>
+    <div class="tavern">
+      <div class="seats-ring" id="seats-ring"></div>
+      <div class="table-wrap">
+        <div class="table-surface" id="table-surface">
+          <div class="pile-label">Sequenza attuale</div>
+          <div class="pile-number" id="pile-top">0</div>
+          <div class="pile-sub" id="pile-sub">0 carte giocate</div>
+        </div>
+      </div>
     </div>
 
-    <div class="others-list" id="others-list"></div>
-
     <div>
-      <div class="hand-label">La tua mano (tocca per giocare quando pensi sia il momento)</div>
+      <div class="hand-label">Le tue carte (tocca per giocarle quando pensi sia il momento)</div>
       <div class="hand-grid" id="hand-grid"></div>
     </div>
 
@@ -399,6 +528,11 @@
   let myId = null;
   let isHost = false;
 
+  // Simbolo con cui rappresentare ogni giocatore seduto al tavolo,
+  // assegnato in base alla sua posizione nell'elenco (stabile per tutti i
+  // client, dato che l'ordine arriva identico dal server).
+  const AVATAR_ICONS = ['🧙‍♂️', '🛡️', '🏹', '👑', '⚔️', '🎭', '🧝‍♀️', '🧑‍🌾'];
+
   // ---- Ordine della mano scelto dal giocatore (solo locale, non sincronizzato) ----
   // Di default ordiniamo per valore crescente: qui è molto utile vedere
   // subito qual è la propria carta più bassa. Restano comunque
@@ -411,7 +545,6 @@
     const known = myHandOrder.filter((c) => serverSet.has(c));
     const newOnes = serverHand.filter((c) => !myHandOrder.includes(c));
     if (newOnes.length) {
-      // Mano nuova (o carte aggiunte): ricostruiamo in ordine crescente.
       myHandOrder = [...known, ...newOnes].sort((a, b) => a - b);
     } else {
       myHandOrder = known;
@@ -458,6 +591,8 @@
 
   const screens = {
     home: document.getElementById('screen-home'),
+    createName: document.getElementById('screen-create-name'),
+    joinName: document.getElementById('screen-join-name'),
     lobby: document.getElementById('screen-lobby'),
     game: document.getElementById('screen-game'),
     result: document.getElementById('screen-result'),
@@ -476,31 +611,37 @@
     el.style.display = msg ? 'block' : 'none';
   }
 
-  socket.on('connect', () => { myId = socket.id; setStatus(document.getElementById('home-status'), ''); });
+  socket.on('connect', () => { myId = socket.id; });
   socket.on('connect_error', () => {
-    flashError(document.getElementById('home-error'), 'Impossibile collegarsi al server. Controlla la connessione internet e riprova.');
-  });
-  socket.on('disconnect', () => {
-    setStatus(document.getElementById('home-status'), 'Connessione persa, riconnessione in corso...');
+    flashError(document.getElementById('create-error'), 'Impossibile collegarsi al server. Controlla la connessione internet e riprova.');
+    flashError(document.getElementById('join-error'), 'Impossibile collegarsi al server. Controlla la connessione internet e riprova.');
   });
 
-  // ---- Home: crea / entra ----
-  document.getElementById('btn-create').addEventListener('click', () => {
-    const name = document.getElementById('input-name').value.trim() || 'Giocatore';
-    setStatus(document.getElementById('home-status'), 'Fondazione della lobby in corso...');
+  // ---- Home: scelta iniziale ----
+  document.getElementById('btn-choice-create').addEventListener('click', () => showScreen('createName'));
+  document.getElementById('btn-choice-join').addEventListener('click', () => showScreen('joinName'));
+  document.getElementById('btn-create-back').addEventListener('click', () => showScreen('home'));
+  document.getElementById('btn-join-back').addEventListener('click', () => showScreen('home'));
+
+  // ---- Crea lobby ----
+  document.getElementById('btn-create-confirm').addEventListener('click', () => {
+    const name = document.getElementById('input-name-create').value.trim() || 'Giocatore';
+    setStatus(document.getElementById('create-status'), 'Fondazione della lobby in corso...');
     socket.emit('createRoom', { name }, (res) => {
-      setStatus(document.getElementById('home-status'), '');
-      if (!res.ok) return flashError(document.getElementById('home-error'), res.error || 'Errore');
+      setStatus(document.getElementById('create-status'), '');
+      if (!res.ok) return flashError(document.getElementById('create-error'), res.error || 'Errore');
     });
   });
-  document.getElementById('btn-join').addEventListener('click', () => {
-    const name = document.getElementById('input-name').value.trim() || 'Giocatore';
-    const code = document.getElementById('input-code').value.trim().toUpperCase();
-    if (!code) return flashError(document.getElementById('home-error'), 'Inserisci un codice.');
-    setStatus(document.getElementById('home-status'), 'Connessione alla lobby in corso...');
+
+  // ---- Entra in lobby ----
+  document.getElementById('btn-join-confirm').addEventListener('click', () => {
+    const name = document.getElementById('input-name-join').value.trim() || 'Giocatore';
+    const code = document.getElementById('input-code-join').value.trim().toUpperCase();
+    if (!code) return flashError(document.getElementById('join-error'), 'Inserisci un codice.');
+    setStatus(document.getElementById('join-status'), 'Connessione alla lobby in corso...');
     socket.emit('joinRoom', { name, code }, (res) => {
-      setStatus(document.getElementById('home-status'), '');
-      if (!res.ok) return flashError(document.getElementById('home-error'), res.error || 'Errore');
+      setStatus(document.getElementById('join-status'), '');
+      if (!res.ok) return flashError(document.getElementById('join-error'), res.error || 'Errore');
     });
   });
 
@@ -580,23 +721,46 @@
     }
   }
 
+  // Dispone gli avatar degli ALTRI giocatori lungo un piccolo arco sopra il
+  // tavolo, come se fossero seduti di fronte a noi: si vedono solo loro,
+  // mai il proprio avatar (siamo "dietro" la fotocamera, al nostro posto).
+  function renderSeats(state) {
+    const ring = document.getElementById('seats-ring');
+    ring.innerHTML = '';
+    const others = state.players.filter((p) => p.id !== myId);
+    const n = others.length;
+    others.forEach((p, i) => {
+      const t = n === 1 ? 0.5 : i / (n - 1);
+      const leftPct = 8 + t * 84;
+      const arcLift = Math.sin(t * Math.PI) * 12; // px, arco leggero
+      const globalIdx = state.players.findIndex((pl) => pl.id === p.id);
+      const icon = AVATAR_ICONS[globalIdx % AVATAR_ICONS.length];
+      const div = document.createElement('div');
+      div.className = 'seat-avatar' + (p.connected ? '' : ' offline');
+      div.style.left = leftPct + '%';
+      div.style.top = (30 - arcLift) + 'px';
+      div.innerHTML = `
+        <div class="figure">${icon}</div>
+        <div class="seat-name">${escapeHtml(p.name)}</div>
+        <div class="seat-count">${p.handCount} 🂠</div>
+      `;
+      ring.appendChild(div);
+    });
+  }
+
   function renderGame(state) {
     document.getElementById('level-chip').textContent = `Livello ${state.level} di ${state.maxLevel}`;
+    document.getElementById('lives-row').textContent = '❤️'.repeat(Math.max(0, state.lives));
 
-    const livesRow = document.getElementById('lives-row');
-    livesRow.textContent = '❤️'.repeat(Math.max(0, state.lives));
-
-    const pileArea = document.getElementById('pile-area');
+    const table = document.getElementById('table-surface');
     const mistakeHappened = prevLives != null && state.lives < prevLives;
     const cardPlayed = prevPlayedCount != null && state.playedCount > prevPlayedCount;
-    pileArea.classList.remove('pile-flash', 'mistake-flash');
-    // Forziamo il reflow per poter far ripartire l'animazione anche se la
-    // classe era già stata rimossa nello stesso ciclo di render.
-    void pileArea.offsetWidth;
+    table.classList.remove('pile-flash', 'mistake-flash');
+    void table.offsetWidth; // forza il reflow per poter far ripartire l'animazione
     if (mistakeHappened) {
-      pileArea.classList.add('mistake-flash');
+      table.classList.add('mistake-flash');
     } else if (cardPlayed) {
-      pileArea.classList.add('pile-flash');
+      table.classList.add('pile-flash');
     }
     prevLives = state.lives;
     prevPlayedCount = state.playedCount;
@@ -604,14 +768,7 @@
     document.getElementById('pile-top').textContent = state.pileTop;
     document.getElementById('pile-sub').textContent = `${state.playedCount} carte giocate su ${state.totalThisLevel}`;
 
-    const others = document.getElementById('others-list');
-    others.innerHTML = '';
-    state.players.filter((p) => p.id !== myId).forEach((p) => {
-      const chip = document.createElement('div');
-      chip.className = 'other-chip';
-      chip.textContent = `${p.name}: ${p.handCount} cart${p.handCount === 1 ? 'a' : 'e'}${p.connected ? '' : ' (offline)'}`;
-      others.appendChild(chip);
-    });
+    renderSeats(state);
 
     const me = state.players.find((p) => p.id === myId);
     const grid = document.getElementById('hand-grid');
